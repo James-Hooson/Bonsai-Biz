@@ -32,6 +32,7 @@ export const Shop: React.FC = () => {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [showAddProduct, setShowAddProduct] = useState(false)
 
+  // Hardcoded products, will need to cloudify for uploads
   const [products, setProducts] = useState<Product[]>([
     {
       id: 1,
@@ -95,13 +96,13 @@ export const Shop: React.FC = () => {
     },
     {
       id: 6,
-      name: 'Pine Bonsai',
+      name: 'Mimic Pine Bonsai',
       price: 99.99,
       image:
         'https://images.unsplash.com/photo-1632161286719-5afe9b5d954b?q=80&w=745&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
       category: 'beginner',
       rating: 4.7,
-      inStock: true,
+      inStock: false,
       description:
         'Hardy pine bonsai that thrives indoors and outdoors. Low maintenance.',
     },
@@ -305,10 +306,8 @@ export const Shop: React.FC = () => {
                   className="w-full h-full object-cover"
                 />
                 {!product.inStock && (
-                  <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-                    <span className="bg-white px-4 py-2 rounded-full text-sm font-semibold">
-                      Out of Stock
-                    </span>
+                  <div className="absolute bottom-0 left-0 right-0 bg-green-500/50 text-white text-center py-2">
+                    <span className="text-sm font-semibold">Out of Stock</span>
                   </div>
                 )}
                 {showAdminPanel && user?.isAdmin && (
@@ -376,7 +375,7 @@ export const Shop: React.FC = () => {
       {cartOpen && (
         <>
           <div
-            className="fixed inset-0 bg-black bg-opacity-50 z-40"
+            className="fixed inset-0 backdrop-blur-sm bg-white/30 z-40"
             onClick={() => setCartOpen(false)}
           />
           <div className="fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-xl z-50 flex flex-col">
