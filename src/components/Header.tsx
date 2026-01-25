@@ -12,11 +12,12 @@ import {
 } from 'lucide-react'
 
 interface HeaderProps {
-  user?: { name: string; email: string; isAdmin: boolean } | null
+  user?: any | null
   onLogin?: () => void
   onLogout?: () => void
   cartItemCount?: number
   onCartOpen?: () => void
+  isLoading?: boolean
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -25,9 +26,11 @@ export const Header: React.FC<HeaderProps> = ({
   onLogout,
   cartItemCount = 0,
   onCartOpen,
+  isLoading,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false)
-
+  const isAdmin =
+    user?.['https://zenbonsai.com/roles']?.includes('admin') || false
   return (
     <header className="bg-white shadow-sm sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -82,7 +85,7 @@ export const Header: React.FC<HeaderProps> = ({
 
             {user ? (
               <div className="flex items-center gap-2">
-                {user.isAdmin && (
+                {isAdmin && (
                   <Link
                     to="/"
                     className="text-gray-700 hover:text-green-600 flex items-center gap-1"

@@ -1,6 +1,7 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { X, Star, Edit, Plus, Save, Trash2, Upload } from 'lucide-react'
 import { Header } from './Header'
+import { useAuth0 } from '@auth0/auth0-react'
 
 interface Product {
   id: number
@@ -17,17 +18,12 @@ interface CartItem extends Product {
   quantity: number
 }
 
-interface AuthUser {
-  email: string
-  name: string
-  isAdmin: boolean
-}
-
 export const Shop: React.FC = () => {
+  const { loginWithRedirect, logout, user, isAuthenticated, isLoading } =
+    useAuth0()
   const [cartOpen, setCartOpen] = useState(false)
   const [cart, setCart] = useState<CartItem[]>([])
   const [selectedCategory, setSelectedCategory] = useState('all')
-  const [user, setUser] = useState<AuthUser | null>(null)
   const [showAdminPanel, setShowAdminPanel] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [showAddProduct, setShowAddProduct] = useState(false)
@@ -134,30 +130,11 @@ export const Shop: React.FC = () => {
 
   const categories = ['all', 'beginner', 'intermediate', 'advanced']
 
-  // Simulated Auth0 login
-
-  const handleLogin = () => {
-    // In a real implementation, this would integrate with Auth0
-    const mockUser: AuthUser = {
-      email: 'admin@zenbonsai.com',
-      name: 'Admin User',
-      isAdmin: true, // In real app, this would come from Auth0 user metadata
-    }
-    setUser(mockUser)
-    alert('Login successful! (In production, this would use Auth0)')
-  }
-
-  const handleLogout = () => {
-    setUser(null)
-    setShowAdminPanel(false)
-    alert('Logged out successfully')
-  }
-
   // Product Management
   const handleSaveProduct = (product: Product) => {
     if (editingProduct) {
       setProducts((prev) =>
-        prev.map((p) => (p.id === product.id ? product : p))
+        prev.map((p) => (p.id === product.id ? product : p)),
       )
       setEditingProduct(null)
     } else {
@@ -174,7 +151,7 @@ export const Shop: React.FC = () => {
 
   const handleImageUpload = (
     e: React.ChangeEvent<HTMLInputElement>,
-    setImageUrl: (url: string) => void
+    setImageUrl: (url: string) => void,
   ) => {
     const file = e.target.files?.[0]
     if (file) {
@@ -195,7 +172,7 @@ export const Shop: React.FC = () => {
         return prev.map((item) =>
           item.id === product.id
             ? { ...item, quantity: item.quantity + 1 }
-            : item
+            : item,
         )
       }
       return [...prev, { ...product, quantity: 1 }]
@@ -212,7 +189,7 @@ export const Shop: React.FC = () => {
       return
     }
     setCart((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, quantity } : item))
+      prev.map((item) => (item.id === id ? { ...item, quantity } : item)),
     )
   }
 
@@ -223,23 +200,44 @@ export const Shop: React.FC = () => {
 
   const cartTotal = cart.reduce(
     (sum, item) => sum + item.price * item.quantity,
-    0
+    0,
   )
   const cartItemCount = cart.reduce((sum, item) => sum + item.quantity, 0)
 
+  // Check if user is admin
+  const isAdmin =
+    user?.['https://zenbonsai.com/roles']?.includes('admin') || false
+  React.useEffect(() => {
+    if (isAdmin) {
+      setShowAdminPanel(true)
+    }
+  }, [isAdmin])
+
+  // Auth Loading state, maybe change to add something fun liek as bonsai tree swaying
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-xl text-gray-600">Loading...</div>
+        </div>
+      </div>
+    )
+  }
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <Header
-        user={user}
-        onLogin={handleLogin}
-        onLogout={handleLogout}
+        user={isAuthenticated ? user : null}
+        onLogin={() => loginWithRedirect()}
+        onLogout={() =>
+          logout({ logoutParams: { returnTo: window.location.origin } })
+        }
         cartItemCount={cartItemCount}
         onCartOpen={() => setCartOpen(true)}
+        isLoading={isLoading}
       />
-
       {/* Admin Panel */}
-      {showAdminPanel && user?.isAdmin && (
+      {showAdminPanel && isAdmin && (
         <div className="bg-blue-50 border-b border-blue-200">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div className="flex items-center justify-between">
@@ -310,7 +308,7 @@ export const Shop: React.FC = () => {
                     <span className="text-sm font-semibold">Out of Stock</span>
                   </div>
                 )}
-                {showAdminPanel && user?.isAdmin && (
+                {showAdminPanel && isAdmin && (
                   <div className="absolute top-2 right-2 flex gap-2">
                     <button
                       onClick={() => setEditingProduct(product)}
@@ -466,7 +464,7 @@ export const ProductModal: React.FC<{
   onClose: () => void
   onImageUpload: (
     e: React.ChangeEvent<HTMLInputElement>,
-    setImageUrl: (url: string) => void
+    setImageUrl: (url: string) => void,
   ) => void
 }> = ({ product, onSave, onClose, onImageUpload }) => {
   const [formData, setFormData] = useState<Product>(
@@ -479,7 +477,7 @@ export const ProductModal: React.FC<{
       rating: 5.0,
       inStock: true,
       description: '',
-    }
+    },
   )
 
   const handleSubmit = () => {
@@ -633,7 +631,7 @@ export const ProductModal: React.FC<{
                     accept="image/*"
                     onChange={(e) =>
                       onImageUpload(e, (url) =>
-                        setFormData({ ...formData, image: url })
+                        setFormData({ ...formData, image: url }),
                       )
                     }
                     className="hidden"
