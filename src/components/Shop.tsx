@@ -257,30 +257,30 @@ export const Shop: React.FC = () => {
               </div>
               <div className="p-4">
                 {' '}
-                {/* Change to p-6 for more padding */}
+                
                 <h3 className="font-semibold text-gray-900 mb-1 text-lg">
                   {' '}
-                  {/* Add text-lg */}
+                  
                   {product.name}
                 </h3>
                 <p className="text-sm text-gray-600 mb-2">
                   {' '}
-                  {/* Change to text-base */}
+                  
                   {product.description}
                 </p>
                 <div className="flex items-center gap-1 mb-2">
                   <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />{' '}
-                  {/* Change from w-4 h-4 to w-5 h-5 */}
+                  
                   <span className="text-sm text-gray-600">
                     {' '}
-                    {/* Change to text-base */}
+                    
                     {product.rating}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-2xl font-bold text-green-600">
                     {' '}
-                    {/* Change from text-xl to text-2xl */}${product.price}
+                    ${product.price}
                   </span>
                   <button
                     onClick={() => addToCart(product)}
