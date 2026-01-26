@@ -14,7 +14,7 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { db, storage } from '../firebase'
 
 interface Product {
-  id: number
+  id: string
   name: string
   price: number
   image: string
@@ -45,8 +45,8 @@ export const Shop: React.FC = () => {
     const loadProducts = async () => {
       const querySnapshot = await getDocs(collection(db, 'products'))
       const loadedProducts: Product[] = []
-      querySnapshot.forEach((doc) => {
-        loadedProducts.push({ id: doc.id, ...doc.data() } as Product)
+      querySnapshot.forEach((docSnap) => {
+        loadedProducts.push({ id: docSnap.id, ...docSnap.data() } as Product)
       })
       setProducts(loadedProducts)
     }
@@ -58,22 +58,24 @@ export const Shop: React.FC = () => {
   const handleSaveProduct = async (product: Product) => {
     if (editingProduct) {
       // Update existing
-      await updateDoc(doc(db, 'products', product.id.toString()), product)
+      const { id, ...productData } = product
+      await updateDoc(doc(db, 'products', product.id), productData)
       setProducts((prev) =>
         prev.map((p) => (p.id === product.id ? product : p)),
       )
       setEditingProduct(null)
     } else {
       // Add new
-      const docRef = await addDoc(collection(db, 'products'), product)
+      const { id, ...productData } = product
+      const docRef = await addDoc(collection(db, 'products'), productData)
       setProducts((prev) => [...prev, { ...product, id: docRef.id }])
       setShowAddProduct(false)
     }
   }
 
-  const handleDeleteProduct = async (id: number) => {
+  const handleDeleteProduct = async (id: string) => {
     if (confirm('Are you sure you want to delete this product?')) {
-      await deleteDoc(doc(db, 'products', id.toString()))
+      await deleteDoc(doc(db, 'products', id))
       setProducts((prev) => prev.filter((p) => p.id !== id))
     }
   }
@@ -219,7 +221,7 @@ export const Shop: React.FC = () => {
 
       {/* Products Grid */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredProducts.map((product) => (
             <div
               key={product.id}
@@ -254,26 +256,36 @@ export const Shop: React.FC = () => {
                 )}
               </div>
               <div className="p-4">
-                <h3 className="font-semibold text-gray-900 mb-1">
+                {' '}
+                {/* Change to p-6 for more padding */}
+                <h3 className="font-semibold text-gray-900 mb-1 text-lg">
+                  {' '}
+                  {/* Add text-lg */}
                   {product.name}
                 </h3>
                 <p className="text-sm text-gray-600 mb-2">
+                  {' '}
+                  {/* Change to text-base */}
                   {product.description}
                 </p>
                 <div className="flex items-center gap-1 mb-2">
-                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                  <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />{' '}
+                  {/* Change from w-4 h-4 to w-5 h-5 */}
                   <span className="text-sm text-gray-600">
+                    {' '}
+                    {/* Change to text-base */}
                     {product.rating}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-xl font-bold text-green-600">
-                    ${product.price}
+                  <span className="text-2xl font-bold text-green-600">
+                    {' '}
+                    {/* Change from text-xl to text-2xl */}${product.price}
                   </span>
                   <button
                     onClick={() => addToCart(product)}
                     disabled={!product.inStock}
-                    className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
+                    className="bg-green-600 text-white px-5 py-2.5 rounded-lg hover:bg-green-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed text-base"
                   >
                     Add to Cart
                   </button>
@@ -397,7 +409,7 @@ export const ProductModal: React.FC<{
 }> = ({ product, onSave, onClose, onImageUpload }) => {
   const [formData, setFormData] = useState<Product>(
     product || {
-      id: 0,
+      id: '',
       name: '',
       price: 0,
       image: '',
@@ -409,10 +421,15 @@ export const ProductModal: React.FC<{
   )
 
   const handleSubmit = () => {
+    if (formData.image === 'uploading...') {
+      alert('Please wait for the image to finish uploading')
+      return
+    }
     if (!formData.name || !formData.description || !formData.image) {
       alert('Please fill in all required fields')
       return
     }
+
     onSave(formData)
   }
 
@@ -553,15 +570,31 @@ export const ProductModal: React.FC<{
                     className="w-32 h-32 object-cover rounded"
                   />
                 )}
-                <div className="flex items-center gap-2">
+                <div className="flex flex-col gap-2">
                   <input
                     type="file"
                     accept="image/*"
-                    onChange={(e) =>
-                      onImageUpload(e, (url) =>
-                        setFormData({ ...formData, image: url }),
-                      )
-                    }
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0]
+                      if (file) {
+                        // Show loading state
+                        setFormData({ ...formData, image: 'uploading...' })
+                        try {
+                          // Upload to Firebase Storage
+                          const storageRef = ref(
+                            storage,
+                            `products/${Date.now()}_${file.name}`,
+                          )
+                          await uploadBytes(storageRef, file)
+                          const downloadURL = await getDownloadURL(storageRef)
+                          setFormData({ ...formData, image: downloadURL })
+                        } catch (error) {
+                          console.error('Upload error:', error)
+                          alert('Failed to upload image')
+                          setFormData({ ...formData, image: '' })
+                        }
+                      }
+                    }}
                     className="hidden"
                     id="image-upload"
                   />
@@ -570,17 +603,22 @@ export const ProductModal: React.FC<{
                     className="flex items-center gap-2 bg-gray-100 px-4 py-2 rounded-lg cursor-pointer hover:bg-gray-200"
                   >
                     <Upload className="w-4 h-4" />
-                    Upload Image
+                    {formData.image === 'uploading...'
+                      ? 'Uploading...'
+                      : 'Upload Image'}
                   </label>
-                  <span className="text-sm text-gray-500">or</span>
+                  <span className="text-sm text-gray-500 text-center">or</span>
                   <input
                     type="url"
                     placeholder="Enter image URL"
-                    value={formData.image}
+                    value={
+                      formData.image === 'uploading...' ? '' : formData.image
+                    }
                     onChange={(e) =>
                       setFormData({ ...formData, image: e.target.value })
                     }
-                    className="flex-1 border rounded-lg px-4 py-2"
+                    className="w-full border rounded-lg px-4 py-2"
+                    disabled={formData.image === 'uploading...'}
                   />
                 </div>
               </div>
@@ -589,10 +627,13 @@ export const ProductModal: React.FC<{
             <div className="flex gap-4 pt-4">
               <button
                 onClick={handleSubmit}
-                className="flex-1 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 flex items-center justify-center gap-2"
+                disabled={formData.image === 'uploading...'}
+                className="flex-1 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
                 <Save className="w-4 h-4" />
-                Save Product
+                {formData.image === 'uploading...'
+                  ? 'Uploading Image...'
+                  : 'Save Product'}
               </button>
               <button
                 onClick={onClose}
