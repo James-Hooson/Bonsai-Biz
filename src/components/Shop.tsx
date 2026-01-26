@@ -2,6 +2,16 @@ import React, { useState, useEffect } from 'react'
 import { X, Star, Edit, Plus, Save, Trash2, Upload } from 'lucide-react'
 import { Header } from './Header'
 import { useAuth0 } from '@auth0/auth0-react'
+import {
+  collection,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc,
+  getDocs,
+} from 'firebase/firestore'
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
+import { db, storage } from '../firebase'
 
 interface Product {
   id: number
@@ -29,138 +39,56 @@ export const Shop: React.FC = () => {
   const [showAddProduct, setShowAddProduct] = useState(false)
 
   // Hardcoded products, will need to cloudify for uploads
-  const [products, setProducts] = useState<Product[]>([
-    {
-      id: 1,
-      name: 'Japanese Maple Bonsai',
-      price: 89.99,
-      image:
-        'https://images.unsplash.com/photo-1599598425947-5202edd56bdb?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-      category: 'beginner',
-      rating: 4.8,
-      inStock: true,
-      description:
-        'Beautiful Japanese Maple with vibrant red foliage. Perfect for beginners.',
-    },
-    {
-      id: 2,
-      name: 'Juniper Bonsai Tree',
-      price: 124.99,
-      image:
-        'https://images.unsplash.com/photo-1599598177991-ec67b5c37318?q=80&w=1025&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-      category: 'intermediate',
-      rating: 4.9,
-      inStock: true,
-      description:
-        'Classic juniper bonsai with traditional styling. Great for intermediate growers.',
-    },
-    {
-      id: 3,
-      name: 'Cherry Blossom Bonsai',
-      price: 159.99,
-      image:
-        'https://images.unsplash.com/photo-1526397751294-331021109fbd?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-      category: 'advanced',
-      rating: 5.0,
-      inStock: true,
-      description:
-        'Stunning cherry blossom that blooms in spring. Requires advanced care.',
-    },
-    {
-      id: 4,
-      name: 'Pine Bonsai',
-      price: 99.99,
-      image:
-        'https://images.unsplash.com/photo-1632161286719-5afe9b5d954b?q=80&w=745&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-      category: 'beginner',
-      rating: 4.7,
-      inStock: true,
-      description:
-        'Hardy pine bonsai that thrives indoors and outdoors. Low maintenance.',
-    },
-    {
-      id: 5,
-      name: 'Pine Bonsai',
-      price: 99.99,
-      image:
-        'https://images.unsplash.com/photo-1632161286719-5afe9b5d954b?q=80&w=745&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-      category: 'beginner',
-      rating: 4.7,
-      inStock: true,
-      description:
-        'Hardy pine bonsai that thrives indoors and outdoors. Low maintenance.',
-    },
-    {
-      id: 6,
-      name: 'Mimic Pine Bonsai',
-      price: 99.99,
-      image:
-        'https://images.unsplash.com/photo-1632161286719-5afe9b5d954b?q=80&w=745&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-      category: 'beginner',
-      rating: 4.7,
-      inStock: false,
-      description:
-        'Hardy pine bonsai that thrives indoors and outdoors. Low maintenance.',
-    },
-    {
-      id: 7,
-      name: 'Pine Bonsai',
-      price: 99.99,
-      image:
-        'https://images.unsplash.com/photo-1632161286719-5afe9b5d954b?q=80&w=745&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-      category: 'beginner',
-      rating: 4.7,
-      inStock: true,
-      description:
-        'Hardy pine bonsai that thrives indoors and outdoors. Low maintenance.',
-    },
-    {
-      id: 8,
-      name: 'Pine Bonsai',
-      price: 99.99,
-      image:
-        'https://images.unsplash.com/photo-1632161286719-5afe9b5d954b?q=80&w=745&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-      category: 'beginner',
-      rating: 4.7,
-      inStock: true,
-      description:
-        'Hardy pine bonsai that thrives indoors and outdoors. Low maintenance.',
-    },
-  ])
-
+  const [products, setProducts] = useState<Product[]>([])
+  // NEED TO CHECK BELOW IS CORRECT
+  useEffect(() => {
+    const loadProducts = async () => {
+      const querySnapshot = await getDocs(collection(db, 'products'))
+      const loadedProducts: Product[] = []
+      querySnapshot.forEach((doc) => {
+        loadedProducts.push({ id: doc.id, ...doc.data() } as Product)
+      })
+      setProducts(loadedProducts)
+    }
+    loadProducts()
+  }, [])
   const categories = ['all', 'beginner', 'intermediate', 'advanced']
 
   // Product Management
-  const handleSaveProduct = (product: Product) => {
+  const handleSaveProduct = async (product: Product) => {
     if (editingProduct) {
+      // Update existing
+      await updateDoc(doc(db, 'products', product.id.toString()), product)
       setProducts((prev) =>
         prev.map((p) => (p.id === product.id ? product : p)),
       )
       setEditingProduct(null)
     } else {
-      setProducts((prev) => [...prev, { ...product, id: Date.now() }])
+      // Add new
+      const docRef = await addDoc(collection(db, 'products'), product)
+      setProducts((prev) => [...prev, { ...product, id: docRef.id }])
       setShowAddProduct(false)
     }
   }
 
-  const handleDeleteProduct = (id: number) => {
+  const handleDeleteProduct = async (id: number) => {
     if (confirm('Are you sure you want to delete this product?')) {
+      await deleteDoc(doc(db, 'products', id.toString()))
       setProducts((prev) => prev.filter((p) => p.id !== id))
     }
   }
 
-  const handleImageUpload = (
+  const handleImageUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
     setImageUrl: (url: string) => void,
   ) => {
     const file = e.target.files?.[0]
     if (file) {
-      // In production, upload to cloud storage (S3, Cloudinary, etc.)
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setImageUrl(reader.result as string)
-      }
-      reader.readAsDataURL(file)
+      // Upload to Firebase Storage
+      const storageRef = ref(storage, `products/${Date.now()}_${file.name}`)
+      await uploadBytes(storageRef, file)
+      const downloadURL = await getDownloadURL(storageRef)
+      setImageUrl(downloadURL)
     }
   }
 
