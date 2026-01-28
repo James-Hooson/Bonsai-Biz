@@ -3,11 +3,29 @@ import { Link } from 'react-router-dom'
 import { Droplets, Sun, Scissors, Sprout, Package } from 'lucide-react'
 import { Header } from './Header'
 
-export const CareGuide = () => {
+interface PageProps {
+  user: any
+  isAuthenticated: boolean
+  isLoading: boolean
+  onLogin: () => void
+  onLogout: () => void
+}
+
+export const CareGuide: React.FC<PageProps> = ({
+  user,
+  isAuthenticated,
+  isLoading,
+  onLogin,
+  onLogout,
+}) => {
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <Header />
+      <Header
+        user={isAuthenticated ? user : null}
+        onLogin={onLogin}
+        onLogout={onLogout}
+        isLoading={isLoading}
+      />
 
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-green-50 to-emerald-50 py-16">

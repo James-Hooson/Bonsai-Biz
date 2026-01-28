@@ -28,19 +28,30 @@ interface CartItem extends Product {
   quantity: number
 }
 
-export const Shop: React.FC = () => {
-  const { loginWithRedirect, logout, user, isAuthenticated, isLoading } =
-    useAuth0()
+interface ShopProps {
+  user: any
+  isAuthenticated: boolean
+  isLoading: boolean
+  onLogin: () => void
+  onLogout: () => void
+}
+
+export const Shop: React.FC<ShopProps> = ({
+  user,
+  isAuthenticated,
+  isLoading,
+  onLogin,
+  onLogout,
+}) => {
   const [cartOpen, setCartOpen] = useState(false)
   const [cart, setCart] = useState<CartItem[]>([])
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [showAdminPanel, setShowAdminPanel] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [showAddProduct, setShowAddProduct] = useState(false)
-
-  // Hardcoded products, will need to cloudify for uploads
   const [products, setProducts] = useState<Product[]>([])
-  // NEED TO CHECK BELOW IS CORRECT
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
   useEffect(() => {
     const loadProducts = async () => {
       const querySnapshot = await getDocs(collection(db, 'products'))
@@ -123,10 +134,16 @@ export const Shop: React.FC = () => {
     )
   }
 
-  const filteredProducts =
-    selectedCategory === 'all'
-      ? products
-      : products.filter((p) => p.category === selectedCategory)
+  const filteredProducts = products
+    .filter(
+      (p) => selectedCategory === 'all' || p.category === selectedCategory,
+    )
+    .filter(
+      (p) =>
+        searchQuery === '' ||
+        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.description.toLowerCase().includes(searchQuery.toLowerCase()),
+    )
 
   const cartTotal = cart.reduce(
     (sum, item) => sum + item.price * item.quantity,
@@ -158,13 +175,15 @@ export const Shop: React.FC = () => {
       {/* Header */}
       <Header
         user={isAuthenticated ? user : null}
-        onLogin={() => loginWithRedirect()}
-        onLogout={() =>
-          logout({ logoutParams: { returnTo: window.location.origin } })
-        }
+        onLogin={onLogin}
+        onLogout={onLogout}
         cartItemCount={cartItemCount}
         onCartOpen={() => setCartOpen(true)}
         isLoading={isLoading}
+        onSearchClick={() => setSearchOpen(!searchOpen)}
+        searchOpen={searchOpen}
+        searchQuery={searchQuery}
+        onSearchChange={(query) => setSearchQuery(query)}
       />
       {/* Admin Panel */}
       {showAdminPanel && isAdmin && (
@@ -257,23 +276,18 @@ export const Shop: React.FC = () => {
               </div>
               <div className="p-4">
                 {' '}
-                
                 <h3 className="font-semibold text-gray-900 mb-1 text-lg">
                   {' '}
-                  
                   {product.name}
                 </h3>
                 <p className="text-sm text-gray-600 mb-2">
                   {' '}
-                  
                   {product.description}
                 </p>
                 <div className="flex items-center gap-1 mb-2">
                   <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />{' '}
-                  
                   <span className="text-sm text-gray-600">
                     {' '}
-                    
                     {product.rating}
                   </span>
                 </div>
@@ -305,7 +319,6 @@ export const Shop: React.FC = () => {
             setEditingProduct(null)
             setShowAddProduct(false)
           }}
-          onImageUpload={handleImageUpload}
         />
       )}
 

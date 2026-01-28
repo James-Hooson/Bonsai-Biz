@@ -18,6 +18,10 @@ interface HeaderProps {
   cartItemCount?: number
   onCartOpen?: () => void
   isLoading?: boolean
+  onSearchClick?: () => void
+  searchOpen?: boolean
+  searchQuery?: string
+  onSearchChange?: (query: string) => void
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -27,6 +31,10 @@ export const Header: React.FC<HeaderProps> = ({
   cartItemCount = 0,
   onCartOpen,
   isLoading,
+  onSearchClick,
+  searchOpen = false,
+  searchQuery = '',
+  onSearchChange,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false)
   const isAdmin =
@@ -59,10 +67,29 @@ export const Header: React.FC<HeaderProps> = ({
           </nav>
 
           <div className="flex items-center gap-4">
-            <button className="text-gray-700 hover:text-green-600">
-              <Search className="w-6 h-6" />
-            </button>
+            {/* Search Section */}
+            <div className="flex items-center gap-2">
+              {searchOpen && (
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  value={searchQuery}
+                  onChange={(e) => onSearchChange?.(e.target.value)}
+                  className="border border-gray-300 rounded-lg px-4 py-2 w-64 focus:ring-2 focus:ring-green-600 focus:border-transparent"
+                  autoFocus
+                />
+              )}
+              {onSearchClick && (
+                <button
+                  onClick={onSearchClick}
+                  className="text-gray-700 hover:text-green-600"
+                >
+                  <Search className="w-6 h-6" />
+                </button>
+              )}
+            </div>
 
+            {/* Cart Button */}
             {onCartOpen && (
               <button
                 onClick={onCartOpen}
@@ -83,6 +110,7 @@ export const Header: React.FC<HeaderProps> = ({
               </Link>
             )}
 
+            {/* User/Login Section */}
             {user ? (
               <div className="flex items-center gap-2">
                 {isAdmin && (
@@ -125,6 +153,7 @@ export const Header: React.FC<HeaderProps> = ({
               </>
             )}
 
+            {/* Mobile Menu Button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="md:hidden text-gray-700"

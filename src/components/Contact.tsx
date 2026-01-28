@@ -2,8 +2,20 @@ import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Mail, Phone, MapPin, Clock, Send } from 'lucide-react'
 import { Header } from './Header'
-
-export const Contact = () => {
+interface PageProps {
+  user: any
+  isAuthenticated: boolean
+  isLoading: boolean
+  onLogin: () => void
+  onLogout: () => void
+}
+export const Contact: React.FC<PageProps> = ({
+  user,
+  isAuthenticated,
+  isLoading,
+  onLogin,
+  onLogout,
+}) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -19,8 +31,12 @@ export const Contact = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <Header />
+      <Header
+        user={isAuthenticated ? user : null}
+        onLogin={onLogin}
+        onLogout={onLogout}
+        isLoading={isLoading}
+      />
 
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-green-50 to-emerald-50 py-16">
