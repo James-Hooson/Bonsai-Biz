@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { X, Star, Edit, Plus, Save, Trash2, Upload } from 'lucide-react'
+import { Star, Edit, Trash2 } from 'lucide-react'
 import { Header } from './Header'
 import {
   collection,
@@ -9,25 +9,12 @@ import {
   doc,
   getDocs,
 } from 'firebase/firestore'
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
-import { db, storage } from '../firebase'
+import { db } from '../firebase'
 import { useSearchParams } from 'react-router-dom'
-
-interface Product {
-  id: string
-  name: string
-  price: number
-  image: string
-  mainCategory: string
-  skillLevel: string
-  rating: number
-  inStock: boolean
-  description: string
-}
-
-interface CartItem extends Product {
-  quantity: number
-}
+import type { Product, CartItem } from '../types'
+import { AdminPanel } from './AdminPanel'
+import { CartSidebar } from './CartSidebar'
+import { ProductModal } from './ProductModal'
 
 interface ShopProps {
   user: any
@@ -148,10 +135,6 @@ export const Shop: React.FC<ShopProps> = ({
         p.description.toLowerCase().includes(searchQuery.toLowerCase()),
     )
 
-  const cartTotal = cart.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0,
-  )
   const cartItemCount = cart.reduce((sum, item) => sum + item.quantity, 0)
 
   // Check if user is admin
@@ -189,22 +172,7 @@ export const Shop: React.FC<ShopProps> = ({
       />
       {/* Admin Panel */}
       {showAdminPanel && isAdmin && (
-        <div className="bg-blue-50 border-b border-blue-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-blue-900">
-                Admin Mode
-              </h2>
-              <button
-                onClick={() => setShowAddProduct(true)}
-                className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-              >
-                <Plus className="w-4 h-4" />
-                Add Product
-              </button>
-            </div>
-          </div>
-        </div>
+        <AdminPanel onAddProduct={() => setShowAddProduct(true)} />
       )}
 
       {/* Hero Section */}
@@ -327,354 +295,13 @@ export const Shop: React.FC<ShopProps> = ({
 
       {/* Cart Sidebar */}
       {cartOpen && (
-        <>
-          <div
-            className="fixed inset-0 backdrop-blur-sm bg-white/30 z-40"
-            onClick={() => setCartOpen(false)}
-          />
-          <div className="fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-xl z-50 flex flex-col">
-            <div className="flex items-center justify-between p-6 border-b">
-              <h2 className="text-2xl font-bold">Shopping Cart</h2>
-              <button onClick={() => setCartOpen(false)}>
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto p-6">
-              {cart.length === 0 ? (
-                <p className="text-gray-500 text-center py-8">
-                  Your cart is empty
-                </p>
-              ) : (
-                <div className="space-y-4">
-                  {cart.map((item) => (
-                    <div key={item.id} className="flex gap-4 border-b pb-4">
-                      <img
-                        src={item.image}
-                        alt={item.name}
-                        className="w-20 h-20 object-cover rounded"
-                      />
-                      <div className="flex-1">
-                        <h3 className="font-semibold">{item.name}</h3>
-                        <p className="text-green-600 font-bold">
-                          ${item.price}
-                        </p>
-                        <div className="flex items-center gap-2 mt-2">
-                          <button
-                            onClick={() =>
-                              updateQuantity(item.id, item.quantity - 1)
-                            }
-                            className="w-8 h-8 border rounded hover:bg-gray-100"
-                          >
-                            -
-                          </button>
-                          <span className="w-8 text-center">
-                            {item.quantity}
-                          </span>
-                          <button
-                            onClick={() =>
-                              updateQuantity(item.id, item.quantity + 1)
-                            }
-                            className="w-8 h-8 border rounded hover:bg-gray-100"
-                          >
-                            +
-                          </button>
-                          <button
-                            onClick={() => removeFromCart(item.id)}
-                            className="ml-auto text-red-600 hover:text-red-700"
-                          >
-                            Remove
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {cart.length > 0 && (
-              <div className="border-t p-6 space-y-4">
-                <div className="flex justify-between text-xl font-bold">
-                  <span>Total:</span>
-                  <span className="text-green-600">
-                    ${cartTotal.toFixed(2)}
-                  </span>
-                </div>
-                <button className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition">
-                  Proceed to Checkout
-                </button>
-              </div>
-            )}
-          </div>
-        </>
+        <CartSidebar
+          cart={cart}
+          onClose={() => setCartOpen(false)}
+          onUpdateQuantity={updateQuantity}
+          onRemove={removeFromCart}
+        />
       )}
     </div>
-  )
-}
-
-// Product Modal Component
-export const ProductModal: React.FC<{
-  product: Product | null
-  onSave: (product: Product) => void
-  onClose: () => void
-}> = ({ product, onSave, onClose }) => {
-  const [formData, setFormData] = useState<Product>(
-    product || {
-      id: '',
-      name: '',
-      price: 0,
-      image: '',
-      mainCategory: 'bonsai',
-      skillLevel: 'beginner',
-      rating: 5.0,
-      inStock: true,
-      description: '',
-    },
-  )
-
-  const handleSubmit = () => {
-    if (formData.image === 'uploading...') {
-      alert('Please wait for the image to finish uploading')
-      return
-    }
-    if (!formData.name || !formData.description || !formData.image) {
-      alert('Please fill in all required fields')
-      return
-    }
-
-    onSave(formData)
-  }
-
-  return (
-    <>
-      <div
-        className="fixed inset-0 bg-black bg-opacity-50 z-50"
-        onClick={onClose}
-      />
-      <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-          <div className="p-6 border-b flex items-center justify-between">
-            <h2 className="text-2xl font-bold">
-              {product ? 'Edit Product' : 'Add New Product'}
-            </h2>
-            <button onClick={onClose}>
-              <X className="w-6 h-6" />
-            </button>
-          </div>
-
-          <div className="p-6 space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Product Name
-              </label>
-              <input
-                type="text"
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-                className="w-full border rounded-lg px-4 py-2"
-                placeholder="Enter product name"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Main Category
-                </label>
-                <select
-                  value={formData.mainCategory}
-                  onChange={(e) =>
-                    setFormData({ ...formData, mainCategory: e.target.value })
-                  }
-                  className="w-full border rounded-lg px-4 py-2"
-                >
-                  <option value="bonsai">Bonsai</option>
-                  <option value="houseplants">House Plants</option>
-                  <option value="tanks">Tanks</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Skill Level
-                </label>
-                <select
-                  value={formData.skillLevel}
-                  onChange={(e) =>
-                    setFormData({ ...formData, skillLevel: e.target.value })
-                  }
-                  className="w-full border rounded-lg px-4 py-2"
-                >
-                  <option value="beginner">Beginner</option>
-                  <option value="intermediate">Intermediate</option>
-                  <option value="advanced">Advanced</option>
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Description
-              </label>
-              <textarea
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-                className="w-full border rounded-lg px-4 py-2"
-                rows={3}
-                placeholder="Enter product description"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Price ($)
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={formData.price || ''}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      price: parseFloat(e.target.value) || 0,
-                    })
-                  }
-                  className="w-full border rounded-lg px-4 py-2"
-                  placeholder="0.00"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">Rating</label>
-                <input
-                  type="number"
-                  step="0.1"
-                  min="0"
-                  max="5"
-                  value={formData.rating}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      rating: parseFloat(e.target.value),
-                    })
-                  }
-                  className="w-full border rounded-lg px-4 py-2"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Stock Status
-              </label>
-              <select
-                value={formData.inStock ? 'true' : 'false'}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    inStock: e.target.value === 'true',
-                  })
-                }
-                className="w-full border rounded-lg px-4 py-2"
-              >
-                <option value="true">In Stock</option>
-                <option value="false">Out of Stock</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Product Image
-              </label>
-              <div className="space-y-2">
-                {formData.image && (
-                  <img
-                    src={formData.image}
-                    alt="Preview"
-                    className="w-32 h-32 object-cover rounded"
-                  />
-                )}
-                <div className="flex flex-col gap-2">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={async (e) => {
-                      const file = e.target.files?.[0]
-                      if (file) {
-                        // Show loading state
-                        setFormData({ ...formData, image: 'uploading...' })
-                        try {
-                          // Upload to Firebase Storage
-                          const storageRef = ref(
-                            storage,
-                            `products/${Date.now()}_${file.name}`,
-                          )
-                          await uploadBytes(storageRef, file)
-                          const downloadURL = await getDownloadURL(storageRef)
-                          setFormData({ ...formData, image: downloadURL })
-                        } catch (error) {
-                          console.error('Upload error:', error)
-                          alert('Failed to upload image')
-                          setFormData({ ...formData, image: '' })
-                        }
-                      }
-                    }}
-                    className="hidden"
-                    id="image-upload"
-                  />
-                  <label
-                    htmlFor="image-upload"
-                    className="flex items-center gap-2 bg-gray-100 px-4 py-2 rounded-lg cursor-pointer hover:bg-gray-200"
-                  >
-                    <Upload className="w-4 h-4" />
-                    {formData.image === 'uploading...'
-                      ? 'Uploading...'
-                      : 'Upload Image'}
-                  </label>
-                  <span className="text-sm text-gray-500 text-center">or</span>
-                  <input
-                    type="url"
-                    placeholder="Enter image URL"
-                    value={
-                      formData.image === 'uploading...' ? '' : formData.image
-                    }
-                    onChange={(e) =>
-                      setFormData({ ...formData, image: e.target.value })
-                    }
-                    className="w-full border rounded-lg px-4 py-2"
-                    disabled={formData.image === 'uploading...'}
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="flex gap-4 pt-4">
-              <button
-                onClick={handleSubmit}
-                disabled={formData.image === 'uploading...'}
-                className="flex-1 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
-              >
-                <Save className="w-4 h-4" />
-                {formData.image === 'uploading...'
-                  ? 'Uploading Image...'
-                  : 'Save Product'}
-              </button>
-              <button
-                onClick={onClose}
-                className="px-6 bg-gray-200 text-gray-700 py-3 rounded-lg hover:bg-gray-300"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </>
   )
 }
