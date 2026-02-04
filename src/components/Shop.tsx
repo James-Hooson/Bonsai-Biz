@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { X, Star, Edit, Plus, Save, Trash2, Upload } from 'lucide-react'
 import { Header } from './Header'
-import { useAuth0 } from '@auth0/auth0-react'
 import {
   collection,
   addDoc,
@@ -12,13 +11,15 @@ import {
 } from 'firebase/firestore'
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { db, storage } from '../firebase'
+import { useSearchParams } from 'react-router-dom'
 
 interface Product {
   id: string
   name: string
   price: number
   image: string
-  category: string
+  mainCategory: string
+  skillLevel: string
   rating: number
   inStock: boolean
   description: string
@@ -43,8 +44,11 @@ export const Shop: React.FC<ShopProps> = ({
   onLogin,
   onLogout,
 }) => {
+  const [searchParams] = useSearchParams()
+  const urlCategory = searchParams.get('category')
   const [cartOpen, setCartOpen] = useState(false)
   const [cart, setCart] = useState<CartItem[]>([])
+  const [mainCategory, setMainCategory] = useState(urlCategory || 'all')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [showAdminPanel, setShowAdminPanel] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
@@ -52,18 +56,30 @@ export const Shop: React.FC<ShopProps> = ({
   const [products, setProducts] = useState<Product[]>([])
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const skillLevels = ['all', 'beginner', 'intermediate', 'advanced']
+
+  React.useEffect(() => {
+  if (urlCategory) {
+    setMainCategory(urlCategory)
+  }
+}, [urlCategory])
   useEffect(() => {
     const loadProducts = async () => {
       const querySnapshot = await getDocs(collection(db, 'products'))
       const loadedProducts: Product[] = []
       querySnapshot.forEach((docSnap) => {
-        loadedProducts.push({ id: docSnap.id, ...docSnap.data() } as Product)
+        const data = docSnap.data()
+        loadedProducts.push({
+          id: docSnap.id,
+          ...data,
+          mainCategory: data.mainCategory || 'bonsai',
+          skillLevel: data.skillLevel || data.category || 'beginner',
+        } as Product)
       })
       setProducts(loadedProducts)
     }
     loadProducts()
   }, [])
-  const categories = ['all', 'beginner', 'intermediate', 'advanced']
 
   // Product Management
   const handleSaveProduct = async (product: Product) => {
@@ -91,20 +107,6 @@ export const Shop: React.FC<ShopProps> = ({
     }
   }
 
-  const handleImageUpload = async (
-    e: React.ChangeEvent<HTMLInputElement>,
-    setImageUrl: (url: string) => void,
-  ) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      // Upload to Firebase Storage
-      const storageRef = ref(storage, `products/${Date.now()}_${file.name}`)
-      await uploadBytes(storageRef, file)
-      const downloadURL = await getDownloadURL(storageRef)
-      setImageUrl(downloadURL)
-    }
-  }
-
   // Cart functions
   const addToCart = (product: Product) => {
     setCart((prev) => {
@@ -120,11 +122,11 @@ export const Shop: React.FC<ShopProps> = ({
     })
   }
 
-  const removeFromCart = (id: number) => {
+  const removeFromCart = (id: string) => {
     setCart((prev) => prev.filter((item) => item.id !== id))
   }
 
-  const updateQuantity = (id: number, quantity: number) => {
+  const updateQuantity = (id: string, quantity: number) => {
     if (quantity === 0) {
       removeFromCart(id)
       return
@@ -135,8 +137,9 @@ export const Shop: React.FC<ShopProps> = ({
   }
 
   const filteredProducts = products
+    .filter((p) => mainCategory === 'all' || p.mainCategory === mainCategory)
     .filter(
-      (p) => selectedCategory === 'all' || p.category === selectedCategory,
+      (p) => selectedCategory === 'all' || p.skillLevel === selectedCategory,
     )
     .filter(
       (p) =>
@@ -179,7 +182,6 @@ export const Shop: React.FC<ShopProps> = ({
         onLogout={onLogout}
         cartItemCount={cartItemCount}
         onCartOpen={() => setCartOpen(true)}
-        isLoading={isLoading}
         onSearchClick={() => setSearchOpen(!searchOpen)}
         searchOpen={searchOpen}
         searchQuery={searchQuery}
@@ -219,24 +221,25 @@ export const Shop: React.FC<ShopProps> = ({
         </div>
       </section>
 
-      {/* Category Filter */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex gap-4 overflow-x-auto pb-2">
-          {categories.map((category) => (
-            <button
-              key={category}
-              onClick={() => setSelectedCategory(category)}
-              className={`px-6 py-2 rounded-full whitespace-nowrap transition ${
-                selectedCategory === category
-                  ? 'bg-green-600 text-white'
-                  : 'bg-white text-gray-700 hover:bg-gray-100'
-              }`}
-            >
-              {category.charAt(0).toUpperCase() + category.slice(1)}
-            </button>
-          ))}
-        </div>
-      </div>
+      {/* Skill Level Filter */}
+<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <p className="text-sm text-gray-600 text-center mb-2">Filter by skill level:</p>
+  <div className="flex gap-4 overflow-x-auto pb-2 justify-center">
+   {skillLevels.map((level) => (
+  <button
+    key={level}
+    onClick={() => setSelectedCategory(level)}
+    className={`px-6 py-2 rounded-full whitespace-nowrap transition ${
+      selectedCategory === level
+        ? 'bg-green-600 text-white'
+        : 'bg-white text-gray-700 hover:bg-gray-100'
+    }`}
+  >
+    {level.charAt(0).toUpperCase() + level.slice(1)}
+  </button>
+))}
+</div>
+</div>
 
       {/* Products Grid */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
@@ -415,18 +418,15 @@ export const ProductModal: React.FC<{
   product: Product | null
   onSave: (product: Product) => void
   onClose: () => void
-  onImageUpload: (
-    e: React.ChangeEvent<HTMLInputElement>,
-    setImageUrl: (url: string) => void,
-  ) => void
-}> = ({ product, onSave, onClose, onImageUpload }) => {
+}> = ({ product, onSave, onClose }) => {
   const [formData, setFormData] = useState<Product>(
     product || {
       id: '',
       name: '',
       price: 0,
       image: '',
-      category: 'beginner',
+      mainCategory: 'bonsai',
+      skillLevel: 'beginner',
       rating: 5.0,
       inStock: true,
       description: '',
@@ -479,6 +479,42 @@ export const ProductModal: React.FC<{
               />
             </div>
 
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Main Category
+                </label>
+                <select
+                  value={formData.mainCategory}
+                  onChange={(e) =>
+                    setFormData({ ...formData, mainCategory: e.target.value })
+                  }
+                  className="w-full border rounded-lg px-4 py-2"
+                >
+                  <option value="bonsai">Bonsai</option>
+                  <option value="houseplants">House Plants</option>
+                  <option value="tanks">Tanks</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Skill Level
+                </label>
+                <select
+                  value={formData.skillLevel}
+                  onChange={(e) =>
+                    setFormData({ ...formData, skillLevel: e.target.value })
+                  }
+                  className="w-full border rounded-lg px-4 py-2"
+                >
+                  <option value="beginner">Beginner</option>
+                  <option value="intermediate">Intermediate</option>
+                  <option value="advanced">Advanced</option>
+                </select>
+              </div>
+            </div>
+
             <div>
               <label className="block text-sm font-medium mb-2">
                 Description
@@ -515,25 +551,6 @@ export const ProductModal: React.FC<{
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">
-                  Category
-                </label>
-                <select
-                  value={formData.category}
-                  onChange={(e) =>
-                    setFormData({ ...formData, category: e.target.value })
-                  }
-                  className="w-full border rounded-lg px-4 py-2"
-                >
-                  <option value="beginner">Beginner</option>
-                  <option value="intermediate">Intermediate</option>
-                  <option value="advanced">Advanced</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
                 <label className="block text-sm font-medium mb-2">Rating</label>
                 <input
                   type="number"
@@ -550,25 +567,25 @@ export const ProductModal: React.FC<{
                   className="w-full border rounded-lg px-4 py-2"
                 />
               </div>
+            </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Stock Status
-                </label>
-                <select
-                  value={formData.inStock ? 'true' : 'false'}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      inStock: e.target.value === 'true',
-                    })
-                  }
-                  className="w-full border rounded-lg px-4 py-2"
-                >
-                  <option value="true">In Stock</option>
-                  <option value="false">Out of Stock</option>
-                </select>
-              </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Stock Status
+              </label>
+              <select
+                value={formData.inStock ? 'true' : 'false'}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    inStock: e.target.value === 'true',
+                  })
+                }
+                className="w-full border rounded-lg px-4 py-2"
+              >
+                <option value="true">In Stock</option>
+                <option value="false">Out of Stock</option>
+              </select>
             </div>
 
             <div>

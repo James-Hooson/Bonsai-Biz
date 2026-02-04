@@ -17,7 +17,6 @@ interface HeaderProps {
   onLogout?: () => void
   cartItemCount?: number
   onCartOpen?: () => void
-  isLoading?: boolean
   onSearchClick?: () => void
   searchOpen?: boolean
   searchQuery?: string
@@ -30,13 +29,13 @@ export const Header: React.FC<HeaderProps> = ({
   onLogout,
   cartItemCount = 0,
   onCartOpen,
-  isLoading,
   onSearchClick,
   searchOpen = false,
   searchQuery = '',
   onSearchChange,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false)
+  const [shopDropdownOpen, setShopDropdownOpen] = React.useState(false)
   const isAdmin =
     user?.['https://zenbonsai.com/roles']?.includes('admin') || false
   return (
@@ -45,13 +44,66 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="flex justify-between items-center h-16">
           <Link to="/" className="flex items-center gap-2">
             <Leaf className="w-8 h-8 text-green-600" />
-            <h1 className="text-2xl font-bold text-gray-900">ZenBonsai</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Zen Oasis</h1>
           </Link>
 
           <nav className="hidden md:flex items-center gap-6">
-            <Link to="/" className="text-gray-700 hover:text-green-600">
-              Shop
-            </Link>
+            <div
+              className="relative"
+              onMouseEnter={() => setShopDropdownOpen(true)}
+              onMouseLeave={() => setShopDropdownOpen(false)}
+            >
+              <button className="text-gray-700 hover:text-green-600 flex items-center gap-1">
+                Shop
+                <svg
+                  className={`w-4 h-4 transition-transform ${shopDropdownOpen ? 'rotate-180' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
+
+              {shopDropdownOpen && (
+                <div className="absolute top-full left-0 mt-2 w-48 bg-white shadow-lg rounded-lg py-2 z-50">
+                  <Link
+                    to="/?category=bonsai"
+                    className="block px-4 py-2 text-gray-700 hover:bg-green-50 hover:text-green-600"
+                    onClick={() => setShopDropdownOpen(false)}
+                  >
+                    🌳 Bonsai
+                  </Link>
+                  <Link
+                    to="/?category=houseplants"
+                    className="block px-4 py-2 text-gray-700 hover:bg-green-50 hover:text-green-600"
+                    onClick={() => setShopDropdownOpen(false)}
+                  >
+                    🪴 House Plants
+                  </Link>
+                  <Link
+                    to="/?category=tanks"
+                    className="block px-4 py-2 text-gray-700 hover:bg-green-50 hover:text-green-600"
+                    onClick={() => setShopDropdownOpen(false)}
+                  >
+                    🐠 Tanks
+                  </Link>
+                  <div className="border-t border-gray-200 my-1"></div>
+                  <Link
+                    to="/"
+                    className="block px-4 py-2 text-gray-700 hover:bg-green-50 hover:text-green-600"
+                    onClick={() => setShopDropdownOpen(false)}
+                  >
+                    All Products
+                  </Link>
+                </div>
+              )}
+            </div>
             <Link to="/about" className="text-gray-700 hover:text-green-600">
               About
             </Link>

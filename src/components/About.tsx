@@ -14,7 +14,6 @@ interface PageProps {
 export const About: React.FC<PageProps> = ({
   user,
   isAuthenticated,
-  isLoading,
   onLogin,
   onLogout,
 }) => {
@@ -24,7 +23,6 @@ export const About: React.FC<PageProps> = ({
         user={isAuthenticated ? user : null}
         onLogin={onLogin}
         onLogout={onLogout}
-        isLoading={isLoading}
       />
 
       {/* Hero Section */}
