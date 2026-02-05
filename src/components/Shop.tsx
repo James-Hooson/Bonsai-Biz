@@ -123,6 +123,35 @@ export const Shop: React.FC<ShopProps> = ({
     )
   }
 
+  const handleCheckout = async () => {
+    const items = cart.map((item) => ({
+      productId: item.id,
+      quantity: item.quantity,
+    }))
+
+    const response = await fetch(
+      `${import.meta.env.VITE_FUNCTIONS_BASE_URL}/createCheckoutSession`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          items,
+          userEmail: user?.email, // Optional - Stripe collects if not provided
+        }),
+      }
+    )
+
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.error || 'Failed to create checkout session')
+    }
+
+    const { url } = await response.json()
+    window.location.href = url
+  }
+
   const filteredProducts = products
     .filter((p) => mainCategory === 'all' || p.mainCategory === mainCategory)
     .filter(
@@ -211,7 +240,7 @@ export const Shop: React.FC<ShopProps> = ({
 
       {/* Products Grid */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {filteredProducts.map((product) => (
             <div
               key={product.id}
@@ -300,6 +329,7 @@ export const Shop: React.FC<ShopProps> = ({
           onClose={() => setCartOpen(false)}
           onUpdateQuantity={updateQuantity}
           onRemove={removeFromCart}
+          onCheckout={handleCheckout}
         />
       )}
     </div>

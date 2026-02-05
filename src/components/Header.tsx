@@ -71,27 +71,27 @@ export const Header: React.FC<HeaderProps> = ({
               </button>
 
               {shopDropdownOpen && (
-                <div className="absolute top-full left-0 mt-2 w-48 bg-white shadow-lg rounded-lg py-2 z-50">
+                <div className="absolute top-full left-0 w-48 bg-white shadow-lg rounded-lg pt-1 pb-2 z-50">
                   <Link
                     to="/?category=bonsai"
                     className="block px-4 py-2 text-gray-700 hover:bg-green-50 hover:text-green-600"
                     onClick={() => setShopDropdownOpen(false)}
                   >
-                    🌳 Bonsai
+                    Bonsai
                   </Link>
                   <Link
                     to="/?category=houseplants"
                     className="block px-4 py-2 text-gray-700 hover:bg-green-50 hover:text-green-600"
                     onClick={() => setShopDropdownOpen(false)}
                   >
-                    🪴 House Plants
+                    House Plants
                   </Link>
                   <Link
                     to="/?category=tanks"
                     className="block px-4 py-2 text-gray-700 hover:bg-green-50 hover:text-green-600"
                     onClick={() => setShopDropdownOpen(false)}
                   >
-                    🐠 Tanks
+                    Tanks
                   </Link>
                   <div className="border-t border-gray-200 my-1"></div>
                   <Link

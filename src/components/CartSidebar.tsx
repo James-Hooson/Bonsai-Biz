@@ -7,6 +7,7 @@ interface CartSidebarProps {
   onClose: () => void
   onUpdateQuantity: (id: string, quantity: number) => void
   onRemove: (id: string) => void
+  onCheckout: () => Promise<void>
 }
 
 export const CartSidebar: React.FC<CartSidebarProps> = ({
@@ -14,7 +15,24 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
   onClose,
   onUpdateQuantity,
   onRemove,
+  onCheckout,
 }) => {
+  const [isCheckingOut, setIsCheckingOut] = React.useState(false)
+
+  const [error, setError] = React.useState<string | null>(null)
+
+  const handleCheckoutClick = async () => {
+    setIsCheckingOut(true)
+    setError(null)
+    try {
+      await onCheckout()
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Checkout failed'
+      console.error('Checkout error:', err)
+      setError(message)
+      setIsCheckingOut(false)
+    }
+  }
   const cartTotal = cart.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0,
@@ -95,8 +113,17 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
                 ${cartTotal.toFixed(2)}
               </span>
             </div>
-            <button className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition">
-              Proceed to Checkout
+            {error && (
+              <div className="text-red-600 text-sm bg-red-50 p-3 rounded">
+                {error}
+              </div>
+            )}
+            <button
+              onClick={handleCheckoutClick}
+              disabled={isCheckingOut}
+              className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+            >
+              {isCheckingOut ? 'Processing...' : 'Proceed to Checkout'}
             </button>
           </div>
         )}

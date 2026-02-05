@@ -1,5 +1,5 @@
 - Please look through all the files
-- Focus on /components 
+- Focus on /components but check all files
 - Recommend reviewing problems from terminal for each /component
 - List issues
 - Give suggestions for improvement

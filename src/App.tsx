@@ -5,6 +5,7 @@ import { Shop } from './components/Shop'
 import { About } from './components/About'
 import { CareGuide } from './components/CareGuide'
 import { Contact } from './components/Contact'
+import { OrderSuccess } from './components/OrderSuccess'
 
 const App: React.FC = () => {
   const { loginWithRedirect, logout, user, isAuthenticated, isLoading } =
@@ -59,6 +60,20 @@ const App: React.FC = () => {
           path="/contact"
           element={
             <Contact
+              user={user}
+              isAuthenticated={isAuthenticated}
+              isLoading={isLoading}
+              onLogin={() => loginWithRedirect()}
+              onLogout={() =>
+                logout({ logoutParams: { returnTo: window.location.origin } })
+              }
+            />
+          }
+        />
+        <Route
+          path="/success"
+          element={
+            <OrderSuccess
               user={user}
               isAuthenticated={isAuthenticated}
               isLoading={isLoading}
