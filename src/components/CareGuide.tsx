@@ -2,14 +2,7 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import { Droplets, Sun, Scissors, Sprout, Package } from 'lucide-react'
 import { Header } from './Header'
-
-interface PageProps {
-  user: any
-  isAuthenticated: boolean
-  isLoading: boolean
-  onLogin: () => void
-  onLogout: () => void
-}
+import type { PageProps } from '../types'
 
 export const CareGuide: React.FC<PageProps> = ({
   user,

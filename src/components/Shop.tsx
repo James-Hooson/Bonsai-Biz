@@ -11,20 +11,13 @@ import {
 } from 'firebase/firestore'
 import { db } from '../firebase'
 import { useSearchParams } from 'react-router-dom'
-import type { Product, CartItem } from '../types'
+import { AUTH0_ROLES_CLAIM } from '../types'
+import type { Product, CartItem, PageProps } from '../types'
 import { AdminPanel } from './AdminPanel'
 import { CartSidebar } from './CartSidebar'
 import { ProductModal } from './ProductModal'
 
-interface ShopProps {
-  user: any
-  isAuthenticated: boolean
-  isLoading: boolean
-  onLogin: () => void
-  onLogout: () => void
-}
-
-export const Shop: React.FC<ShopProps> = ({
+export const Shop: React.FC<PageProps> = ({
   user,
   isAuthenticated,
   isLoading,
@@ -43,27 +36,38 @@ export const Shop: React.FC<ShopProps> = ({
   const [products, setProducts] = useState<Product[]>([])
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const skillLevels = ['all', 'beginner', 'intermediate', 'advanced']
 
-  React.useEffect(() => {
-  if (urlCategory) {
-    setMainCategory(urlCategory)
-  }
-}, [urlCategory])
+  useEffect(() => {
+    if (urlCategory) {
+      setMainCategory(urlCategory)
+    }
+  }, [urlCategory])
+
   useEffect(() => {
     const loadProducts = async () => {
-      const querySnapshot = await getDocs(collection(db, 'products'))
-      const loadedProducts: Product[] = []
-      querySnapshot.forEach((docSnap) => {
-        const data = docSnap.data()
-        loadedProducts.push({
-          id: docSnap.id,
-          ...data,
-          mainCategory: data.mainCategory || 'bonsai',
-          skillLevel: data.skillLevel || data.category || 'beginner',
-        } as Product)
-      })
-      setProducts(loadedProducts)
+      setLoading(true)
+      setError(null)
+      try {
+        const querySnapshot = await getDocs(collection(db, 'products'))
+        const loadedProducts: Product[] = []
+        querySnapshot.forEach((docSnap) => {
+          const data = docSnap.data()
+          loadedProducts.push({
+            id: docSnap.id,
+            ...data,
+            mainCategory: data.mainCategory || 'bonsai',
+            skillLevel: data.skillLevel || data.category || 'beginner',
+          } as Product)
+        })
+        setProducts(loadedProducts)
+      } catch {
+        setError('Failed to load products. Please try again.')
+      } finally {
+        setLoading(false)
+      }
     }
     loadProducts()
   }, [])
@@ -168,7 +172,7 @@ export const Shop: React.FC<ShopProps> = ({
 
   // Check if user is admin
   const isAdmin =
-    user?.['https://zenbonsai.com/roles']?.includes('admin') || false
+    user?.[AUTH0_ROLES_CLAIM]?.includes('admin') || false
   React.useEffect(() => {
     if (isAdmin) {
       setShowAdminPanel(true)
@@ -240,6 +244,21 @@ export const Shop: React.FC<ShopProps> = ({
 
       {/* Products Grid */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+        {loading ? (
+          <div className="text-center py-16">
+            <div className="text-xl text-gray-600">Loading products...</div>
+          </div>
+        ) : error ? (
+          <div className="text-center py-16">
+            <div className="text-xl text-red-600 mb-4">{error}</div>
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition"
+            >
+              Try Again
+            </button>
+          </div>
+        ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {filteredProducts.map((product) => (
             <div
@@ -308,6 +327,7 @@ export const Shop: React.FC<ShopProps> = ({
             </div>
           ))}
         </div>
+        )}
       </main>
 
       {/* Edit/Add Product Modal */}

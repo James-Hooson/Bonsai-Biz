@@ -2,13 +2,8 @@ import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Mail, Phone, MapPin, Clock, Send } from 'lucide-react'
 import { Header } from './Header'
-interface PageProps {
-  user: any
-  isAuthenticated: boolean
-  isLoading: boolean
-  onLogin: () => void
-  onLogout: () => void
-}
+import type { PageProps } from '../types'
+
 export const Contact: React.FC<PageProps> = ({
   user,
   isAuthenticated,

@@ -22,9 +22,11 @@ export const ProductModal: React.FC<{
       description: '',
     },
   )
+  const [uploading, setUploading] = useState(false)
+  const MAX_FILE_SIZE_MB = 5
 
   const handleSubmit = () => {
-    if (formData.image === 'uploading...') {
+    if (uploading) {
       alert('Please wait for the image to finish uploading')
       return
     }
@@ -197,10 +199,12 @@ export const ProductModal: React.FC<{
                     onChange={async (e) => {
                       const file = e.target.files?.[0]
                       if (file) {
-                        // Show loading state
-                        setFormData({ ...formData, image: 'uploading...' })
+                        if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+                          alert(`File size must be under ${MAX_FILE_SIZE_MB}MB`)
+                          return
+                        }
+                        setUploading(true)
                         try {
-                          // Upload to Firebase Storage
                           const storageRef = ref(
                             storage,
                             `products/${Date.now()}_${file.name}`,
@@ -208,10 +212,11 @@ export const ProductModal: React.FC<{
                           await uploadBytes(storageRef, file)
                           const downloadURL = await getDownloadURL(storageRef)
                           setFormData({ ...formData, image: downloadURL })
-                        } catch (error) {
-                          console.error('Upload error:', error)
+                        } catch {
                           alert('Failed to upload image')
                           setFormData({ ...formData, image: '' })
+                        } finally {
+                          setUploading(false)
                         }
                       }
                     }}
@@ -223,22 +228,18 @@ export const ProductModal: React.FC<{
                     className="flex items-center gap-2 bg-gray-100 px-4 py-2 rounded-lg cursor-pointer hover:bg-gray-200"
                   >
                     <Upload className="w-4 h-4" />
-                    {formData.image === 'uploading...'
-                      ? 'Uploading...'
-                      : 'Upload Image'}
+                    {uploading ? 'Uploading...' : 'Upload Image'}
                   </label>
                   <span className="text-sm text-gray-500 text-center">or</span>
                   <input
                     type="url"
                     placeholder="Enter image URL"
-                    value={
-                      formData.image === 'uploading...' ? '' : formData.image
-                    }
+                    value={formData.image}
                     onChange={(e) =>
                       setFormData({ ...formData, image: e.target.value })
                     }
                     className="w-full border rounded-lg px-4 py-2"
-                    disabled={formData.image === 'uploading...'}
+                    disabled={uploading}
                   />
                 </div>
               </div>
@@ -247,13 +248,11 @@ export const ProductModal: React.FC<{
             <div className="flex gap-4 pt-4">
               <button
                 onClick={handleSubmit}
-                disabled={formData.image === 'uploading...'}
+                disabled={uploading}
                 className="flex-1 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
                 <Save className="w-4 h-4" />
-                {formData.image === 'uploading...'
-                  ? 'Uploading Image...'
-                  : 'Save Product'}
+                {uploading ? 'Uploading Image...' : 'Save Product'}
               </button>
               <button
                 onClick={onClose}

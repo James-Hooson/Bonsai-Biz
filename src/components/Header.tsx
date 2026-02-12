@@ -8,11 +8,13 @@ import {
   Leaf,
   LogIn,
   LogOut,
-  User,
+  User as UserIcon,
 } from 'lucide-react'
+import type { User } from '@auth0/auth0-spa-js'
+import { AUTH0_ROLES_CLAIM } from '../types'
 
 interface HeaderProps {
-  user?: any | null
+  user?: User | null
   onLogin?: () => void
   onLogout?: () => void
   cartItemCount?: number
@@ -37,7 +39,7 @@ export const Header: React.FC<HeaderProps> = ({
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false)
   const [shopDropdownOpen, setShopDropdownOpen] = React.useState(false)
   const isAdmin =
-    user?.['https://zenbonsai.com/roles']?.includes('admin') || false
+    user?.[AUTH0_ROLES_CLAIM]?.includes('admin') || false
   return (
     <header className="bg-white shadow-sm sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -170,7 +172,7 @@ export const Header: React.FC<HeaderProps> = ({
                     to="/"
                     className="text-gray-700 hover:text-green-600 flex items-center gap-1"
                   >
-                    <User className="w-5 h-5" />
+                    <UserIcon className="w-5 h-5" />
                     <span className="hidden sm:inline">Admin</span>
                   </Link>
                 )}

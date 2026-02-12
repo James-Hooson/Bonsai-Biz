@@ -5,13 +5,7 @@ import { db } from '../firebase'
 import { Header } from './Header'
 import { CheckCircle, Loader2, AlertCircle } from 'lucide-react'
 
-interface OrderSuccessProps {
-  user: any
-  isAuthenticated: boolean
-  isLoading: boolean
-  onLogin: () => void
-  onLogout: () => void
-}
+import type { PageProps } from '../types'
 
 interface OrderItem {
   productId: string
@@ -28,7 +22,7 @@ interface Order {
   stripePaymentIntentId: string | null
 }
 
-export const OrderSuccess: React.FC<OrderSuccessProps> = ({
+export const OrderSuccess: React.FC<PageProps> = ({
   user,
   isAuthenticated,
   isLoading,

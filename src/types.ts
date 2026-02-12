@@ -1,3 +1,15 @@
+import type { User } from '@auth0/auth0-spa-js'
+
+export interface PageProps {
+  user: User | undefined
+  isAuthenticated: boolean
+  isLoading: boolean
+  onLogin: () => void
+  onLogout: () => void
+}
+
+export const AUTH0_ROLES_CLAIM = 'https://zenbonsai.com/roles'
+
 export interface Product {
   id: string
   name: string
