@@ -63,7 +63,8 @@ export const Shop: React.FC<PageProps> = ({
           } as Product)
         })
         setProducts(loadedProducts)
-      } catch {
+      } catch (err) {
+        console.error('Failed to load products:', err)
         setError('Failed to load products. Please try again.')
       } finally {
         setLoading(false)
