@@ -41,9 +41,7 @@ export const Shop: React.FC<PageProps> = ({
   const skillLevels = ['all', 'beginner', 'intermediate', 'advanced']
 
   useEffect(() => {
-    if (urlCategory) {
-      setMainCategory(urlCategory)
-    }
+    setMainCategory(urlCategory || 'all')
   }, [urlCategory])
 
   useEffect(() => {
