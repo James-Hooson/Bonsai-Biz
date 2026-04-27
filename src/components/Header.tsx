@@ -55,7 +55,7 @@ export const Header: React.FC<HeaderProps> = ({
               onMouseEnter={() => setShopDropdownOpen(true)}
               onMouseLeave={() => setShopDropdownOpen(false)}
             >
-              <button className="text-gray-700 hover:text-green-600 flex items-center gap-1">
+              <Link to="/" className="text-gray-700 hover:text-green-600 flex items-center gap-1">
                 Shop
                 <svg
                   className={`w-4 h-4 transition-transform ${shopDropdownOpen ? 'rotate-180' : ''}`}
@@ -70,7 +70,7 @@ export const Header: React.FC<HeaderProps> = ({
                     d="M19 9l-7 7-7-7"
                   />
                 </svg>
-              </button>
+              </Link>
 
               {shopDropdownOpen && (
                 <div className="absolute top-full left-0 w-48 bg-white shadow-lg rounded-lg pt-1 pb-2 z-50">

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Mail, Phone, MapPin, Clock, Send } from 'lucide-react'
+import { Mail, Phone, Clock, Send } from 'lucide-react'
 import { Header } from './Header'
 import type { PageProps } from '../types'
 
@@ -195,31 +195,6 @@ export const Contact: React.FC<PageProps> = ({
                   <p className="text-gray-600 text-sm mt-2">
                     Closed on weekends and holidays
                   </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Address Card */}
-            <div className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition">
-              <div className="flex items-start gap-4">
-                <div className="bg-red-100 p-3 rounded-full">
-                  <MapPin className="w-6 h-6 text-red-600" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                    Visit Our Store
-                  </h3>
-                  <p className="text-gray-700 mb-1">123 Bonsai Lane</p>
-                  <p className="text-gray-700 mb-1">Green City, GC 12345</p>
-
-                  <a
-                    href="https://maps.google.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-red-600 hover:text-red-700 font-medium inline-block mt-2"
-                  >
-                    Get Directions →
-                  </a>
                 </div>
               </div>
             </div>
