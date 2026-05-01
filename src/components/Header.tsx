@@ -115,6 +115,12 @@ export const Header: React.FC<HeaderProps> = ({
             >
               Care Guide
             </Link>
+            <Link
+              to="/aquascaping"
+              className="text-gray-700 hover:text-green-600"
+            >
+              Aquascaping
+            </Link>
             <Link to="/contact" className="text-gray-700 hover:text-green-600">
               Contact
             </Link>
@@ -242,6 +248,12 @@ export const Header: React.FC<HeaderProps> = ({
               className="block text-gray-700 hover:text-green-600 py-2"
             >
               Care Guide
+            </Link>
+            <Link
+              to="/aquascaping"
+              className="block text-gray-700 hover:text-green-600 py-2"
+            >
+              Aquascaping
             </Link>
             <Link
               to="/contact"

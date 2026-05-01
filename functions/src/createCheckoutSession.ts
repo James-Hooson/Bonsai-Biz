@@ -64,7 +64,7 @@ export const createCheckoutSession = onRequest(
 
         lineItems.push({
           price_data: {
-            currency: 'usd',
+            currency: 'nzd',
             product_data: {
               name: productData.name,
               description: productData.description,
