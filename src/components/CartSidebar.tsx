@@ -1,13 +1,17 @@
 import React from 'react'
-import { X } from 'lucide-react'
+import { X, Package, Truck } from 'lucide-react'
 import type { CartItem } from '../types'
+
+export type DeliveryMethod = 'pickup' | 'delivery'
+
+export const DELIVERY_FEE = 10
 
 interface CartSidebarProps {
   cart: CartItem[]
   onClose: () => void
   onUpdateQuantity: (id: string, quantity: number) => void
   onRemove: (id: string) => void
-  onCheckout: () => Promise<void>
+  onCheckout: (deliveryMethod: DeliveryMethod) => Promise<void>
 }
 
 export const CartSidebar: React.FC<CartSidebarProps> = ({
@@ -18,14 +22,14 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
   onCheckout,
 }) => {
   const [isCheckingOut, setIsCheckingOut] = React.useState(false)
-
   const [error, setError] = React.useState<string | null>(null)
+  const [deliveryMethod, setDeliveryMethod] = React.useState<DeliveryMethod>('pickup')
 
   const handleCheckoutClick = async () => {
     setIsCheckingOut(true)
     setError(null)
     try {
-      await onCheckout()
+      await onCheckout(deliveryMethod)
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Checkout failed'
       console.error('Checkout error:', err)
@@ -33,10 +37,10 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
       setIsCheckingOut(false)
     }
   }
-  const cartTotal = cart.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0,
-  )
+
+  const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
+  const deliveryFee = deliveryMethod === 'delivery' ? DELIVERY_FEE : 0
+  const cartTotal = subtotal + deliveryFee
 
   return (
     <>
@@ -107,12 +111,57 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
 
         {cart.length > 0 && (
           <div className="border-t p-6 space-y-4">
-            <div className="flex justify-between text-xl font-bold">
-              <span>Total:</span>
-              <span className="text-green-600">
-                ${cartTotal.toFixed(2)}
-              </span>
+            {/* Pickup / Delivery toggle */}
+            <div>
+              <p className="text-sm font-medium text-gray-700 mb-2">Fulfilment</p>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => setDeliveryMethod('pickup')}
+                  className={`flex items-center justify-center gap-2 py-2 px-3 rounded-lg border text-sm font-medium transition ${
+                    deliveryMethod === 'pickup'
+                      ? 'bg-green-600 text-white border-green-600'
+                      : 'bg-white text-gray-700 border-gray-300 hover:border-green-400'
+                  }`}
+                >
+                  <Package className="w-4 h-4" />
+                  Pick Up
+                </button>
+                <button
+                  onClick={() => setDeliveryMethod('delivery')}
+                  className={`flex items-center justify-center gap-2 py-2 px-3 rounded-lg border text-sm font-medium transition ${
+                    deliveryMethod === 'delivery'
+                      ? 'bg-green-600 text-white border-green-600'
+                      : 'bg-white text-gray-700 border-gray-300 hover:border-green-400'
+                  }`}
+                >
+                  <Truck className="w-4 h-4" />
+                  Delivery
+                </button>
+              </div>
+              {deliveryMethod === 'delivery' && (
+                <p className="text-xs text-gray-500 mt-1">Flat rate delivery within NZ</p>
+              )}
             </div>
+
+            {/* Cost breakdown */}
+            <div className="space-y-1 text-sm text-gray-700">
+              <div className="flex justify-between">
+                <span>Subtotal</span>
+                <span>${subtotal.toFixed(2)}</span>
+              </div>
+              {deliveryMethod === 'delivery' && (
+                <div className="flex justify-between">
+                  <span>Delivery</span>
+                  <span>${DELIVERY_FEE.toFixed(2)}</span>
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-between text-xl font-bold border-t pt-3">
+              <span>Total:</span>
+              <span className="text-green-600">${cartTotal.toFixed(2)}</span>
+            </div>
+
             {error && (
               <div className="text-red-600 text-sm bg-red-50 p-3 rounded">
                 {error}

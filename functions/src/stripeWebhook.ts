@@ -38,20 +38,35 @@ export const stripeWebhook = onRequest(
 
     // Handle the checkout.session.completed event
     if (event.type === 'checkout.session.completed') {
-      const session = event.data.object as Stripe.Checkout.Session
-      const orderId = session.metadata?.orderId
+      const sessionStub = event.data.object as Stripe.Checkout.Session
+      const orderId = sessionStub.metadata?.orderId
 
       if (orderId) {
         try {
+          // Re-fetch the full session so shipping_details is populated
+          const session = await stripe.checkout.sessions.retrieve(sessionStub.id)
           const db = admin.firestore()
           const updateData: Record<string, unknown> = {
             status: 'completed',
             stripePaymentIntentId: session.payment_intent,
             updatedAt: admin.firestore.FieldValue.serverTimestamp(),
           }
-          // Capture email from Stripe for guest checkouts
-          if (session.customer_email) {
+          if (session.customer_details?.email) {
+            updateData.userEmail = session.customer_details.email
+          } else if (session.customer_email) {
             updateData.userEmail = session.customer_email
+          }
+          if (session.shipping_details?.address) {
+            const addr = session.shipping_details.address
+            updateData.shippingAddress = {
+              name: session.shipping_details.name ?? null,
+              line1: addr.line1 ?? null,
+              line2: addr.line2 ?? null,
+              city: addr.city ?? null,
+              state: addr.state ?? null,
+              postalCode: addr.postal_code ?? null,
+              country: addr.country ?? null,
+            }
           }
           await db.collection('orders').doc(orderId).update(updateData)
           console.log(`Order ${orderId} marked as completed`)

@@ -126,7 +126,7 @@ export const Shop: React.FC<PageProps> = ({
     )
   }
 
-  const handleCheckout = async () => {
+  const handleCheckout = async (deliveryMethod: 'pickup' | 'delivery') => {
     const items = cart.map((item) => ({
       productId: item.id,
       quantity: item.quantity,
@@ -141,7 +141,8 @@ export const Shop: React.FC<PageProps> = ({
         },
         body: JSON.stringify({
           items,
-          userEmail: user?.email, // Optional - Stripe collects if not provided
+          deliveryMethod,
+          userEmail: user?.email,
         }),
       }
     )

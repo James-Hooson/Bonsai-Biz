@@ -7,9 +7,11 @@ service cloud.firestore {
       allow write: if request.auth != null;
     }
 
-    // Orders: only the owning user can read/write
+    // Orders: readable by anyone who knows the order ID (unguessable Firestore auto-ID)
+    // Writes are handled exclusively by Cloud Functions (Admin SDK bypasses these rules)
     match /orders/{orderId} {
-      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow read: if true;
+      allow write: if false;
     }
   }
 }

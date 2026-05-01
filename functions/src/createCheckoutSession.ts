@@ -10,9 +10,12 @@ interface CheckoutItem {
   quantity: number
 }
 
+const DELIVERY_FEE_NZD = 10
+
 interface CheckoutRequestBody {
   items: CheckoutItem[]
-  userEmail?: string // Optional - Stripe will collect if not provided
+  deliveryMethod?: 'pickup' | 'delivery'
+  userEmail?: string
 }
 
 export const createCheckoutSession = onRequest(
@@ -23,9 +26,9 @@ export const createCheckoutSession = onRequest(
       return
     }
 
-    const { items, userEmail } = req.body as CheckoutRequestBody
+    const { items, deliveryMethod = 'pickup', userEmail } = req.body as CheckoutRequestBody
 
-    if (!items || !Array.isArray(items) || items.length === 0) {
+if (!items || !Array.isArray(items) || items.length === 0) {
       res.status(400).json({ error: 'Items array is required' })
       return
     }
@@ -83,11 +86,23 @@ export const createCheckoutSession = onRequest(
         })
       }
 
+      if (deliveryMethod === 'delivery') {
+        lineItems.push({
+          price_data: {
+            currency: 'nzd',
+            product_data: { name: 'Delivery' },
+            unit_amount: DELIVERY_FEE_NZD * 100,
+          },
+          quantity: 1,
+        })
+      }
+
       // Create pending order in Firestore
       const orderRef = await db.collection('orders').add({
         status: 'pending',
-        userEmail: userEmail || null, // Will be updated from Stripe webhook if guest checkout
+        userEmail: userEmail || null,
         items: orderItems,
+        deliveryMethod,
         stripeSessionId: null,
         stripePaymentIntentId: null,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -103,9 +118,13 @@ export const createCheckoutSession = onRequest(
         line_items: lineItems,
         success_url: `${baseUrl}/success?order_id=${orderRef.id}&session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${baseUrl}/`,
-        ...(userEmail && { customer_email: userEmail }), // Only set if provided
+        ...(userEmail && { customer_email: userEmail }),
+        ...(deliveryMethod === 'delivery' && {
+          shipping_address_collection: { allowed_countries: ['NZ'] },
+        }),
         metadata: {
           orderId: orderRef.id,
+          deliveryMethod,
         },
       })
 
