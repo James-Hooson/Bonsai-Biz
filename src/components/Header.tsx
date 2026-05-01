@@ -8,11 +8,13 @@ import {
   Leaf,
   LogIn,
   LogOut,
-  User,
+  User as UserIcon,
 } from 'lucide-react'
+import type { User } from '@auth0/auth0-spa-js'
+import { AUTH0_ROLES_CLAIM } from '../types'
 
 interface HeaderProps {
-  user?: any | null
+  user?: User | null
   onLogin?: () => void
   onLogout?: () => void
   cartItemCount?: number
@@ -37,7 +39,7 @@ export const Header: React.FC<HeaderProps> = ({
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false)
   const [shopDropdownOpen, setShopDropdownOpen] = React.useState(false)
   const isAdmin =
-    user?.['https://zenbonsai.com/roles']?.includes('admin') || false
+    user?.[AUTH0_ROLES_CLAIM]?.includes('admin') || false
   return (
     <header className="bg-white shadow-sm sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -53,7 +55,7 @@ export const Header: React.FC<HeaderProps> = ({
               onMouseEnter={() => setShopDropdownOpen(true)}
               onMouseLeave={() => setShopDropdownOpen(false)}
             >
-              <button className="text-gray-700 hover:text-green-600 flex items-center gap-1">
+              <Link to="/" className="text-gray-700 hover:text-green-600 flex items-center gap-1">
                 Shop
                 <svg
                   className={`w-4 h-4 transition-transform ${shopDropdownOpen ? 'rotate-180' : ''}`}
@@ -68,30 +70,30 @@ export const Header: React.FC<HeaderProps> = ({
                     d="M19 9l-7 7-7-7"
                   />
                 </svg>
-              </button>
+              </Link>
 
               {shopDropdownOpen && (
-                <div className="absolute top-full left-0 mt-2 w-48 bg-white shadow-lg rounded-lg py-2 z-50">
+                <div className="absolute top-full left-0 w-48 bg-white shadow-lg rounded-lg pt-1 pb-2 z-50">
                   <Link
                     to="/?category=bonsai"
                     className="block px-4 py-2 text-gray-700 hover:bg-green-50 hover:text-green-600"
                     onClick={() => setShopDropdownOpen(false)}
                   >
-                    🌳 Bonsai
+                    Bonsai
                   </Link>
                   <Link
                     to="/?category=houseplants"
                     className="block px-4 py-2 text-gray-700 hover:bg-green-50 hover:text-green-600"
                     onClick={() => setShopDropdownOpen(false)}
                   >
-                    🪴 House Plants
+                    House Plants
                   </Link>
                   <Link
                     to="/?category=tanks"
                     className="block px-4 py-2 text-gray-700 hover:bg-green-50 hover:text-green-600"
                     onClick={() => setShopDropdownOpen(false)}
                   >
-                    🐠 Tanks
+                    Tanks
                   </Link>
                   <div className="border-t border-gray-200 my-1"></div>
                   <Link
@@ -112,6 +114,12 @@ export const Header: React.FC<HeaderProps> = ({
               className="text-gray-700 hover:text-green-600"
             >
               Care Guide
+            </Link>
+            <Link
+              to="/aquascaping"
+              className="text-gray-700 hover:text-green-600"
+            >
+              Aquascaping
             </Link>
             <Link to="/contact" className="text-gray-700 hover:text-green-600">
               Contact
@@ -170,7 +178,7 @@ export const Header: React.FC<HeaderProps> = ({
                     to="/"
                     className="text-gray-700 hover:text-green-600 flex items-center gap-1"
                   >
-                    <User className="w-5 h-5" />
+                    <UserIcon className="w-5 h-5" />
                     <span className="hidden sm:inline">Admin</span>
                   </Link>
                 )}
@@ -240,6 +248,12 @@ export const Header: React.FC<HeaderProps> = ({
               className="block text-gray-700 hover:text-green-600 py-2"
             >
               Care Guide
+            </Link>
+            <Link
+              to="/aquascaping"
+              className="block text-gray-700 hover:text-green-600 py-2"
+            >
+              Aquascaping
             </Link>
             <Link
               to="/contact"

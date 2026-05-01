@@ -4,7 +4,9 @@ import { useAuth0 } from '@auth0/auth0-react'
 import { Shop } from './components/Shop'
 import { About } from './components/About'
 import { CareGuide } from './components/CareGuide'
+import { Aquascaping } from './components/Aquascaping'
 import { Contact } from './components/Contact'
+import { OrderSuccess } from './components/OrderSuccess'
 
 const App: React.FC = () => {
   const { loginWithRedirect, logout, user, isAuthenticated, isLoading } =
@@ -56,9 +58,37 @@ const App: React.FC = () => {
           }
         />
         <Route
+          path="/aquascaping"
+          element={
+            <Aquascaping
+              user={user}
+              isAuthenticated={isAuthenticated}
+              isLoading={isLoading}
+              onLogin={() => loginWithRedirect()}
+              onLogout={() =>
+                logout({ logoutParams: { returnTo: window.location.origin } })
+              }
+            />
+          }
+        />
+        <Route
           path="/contact"
           element={
             <Contact
+              user={user}
+              isAuthenticated={isAuthenticated}
+              isLoading={isLoading}
+              onLogin={() => loginWithRedirect()}
+              onLogout={() =>
+                logout({ logoutParams: { returnTo: window.location.origin } })
+              }
+            />
+          }
+        />
+        <Route
+          path="/success"
+          element={
+            <OrderSuccess
               user={user}
               isAuthenticated={isAuthenticated}
               isLoading={isLoading}

@@ -26,4 +26,7 @@ dist-ssr
 .env
 .env.local
 .env.*.local
-EOF
+.env.production
+
+# Cloud Functions build output
+functions/lib
