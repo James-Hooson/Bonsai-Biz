@@ -190,6 +190,8 @@ export const ProductModal: React.FC<{
                     src={formData.image}
                     alt="Preview"
                     className="w-32 h-32 object-cover rounded"
+                    loading="lazy"
+                    decoding="async"
                   />
                 )}
                 <div className="flex flex-col gap-2">

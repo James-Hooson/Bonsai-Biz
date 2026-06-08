@@ -1,10 +1,11 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Products: public read, authenticated write
+    // Products: public read, admin-only write
     match /products/{productId} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if request.auth != null
+        && request.auth.token.email in ['jmhooson48@gmail.com', 'zenoasisnz@gmail.com'];
     }
 
     // Orders: readable by anyone who knows the order ID (unguessable Firestore auto-ID)

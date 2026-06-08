@@ -11,7 +11,7 @@ import {
   User as UserIcon,
 } from 'lucide-react'
 import type { User } from '@auth0/auth0-spa-js'
-import { AUTH0_ROLES_CLAIM } from '../types'
+import { ADMIN_EMAILS } from '../types'
 
 interface HeaderProps {
   user?: User | null
@@ -38,8 +38,7 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false)
   const [shopDropdownOpen, setShopDropdownOpen] = React.useState(false)
-  const isAdmin =
-    user?.[AUTH0_ROLES_CLAIM]?.includes('admin') || false
+  const isAdmin = !!user?.email && ADMIN_EMAILS.includes(user.email)
   return (
     <header className="bg-white shadow-sm sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

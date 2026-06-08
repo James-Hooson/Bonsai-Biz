@@ -11,7 +11,7 @@ import {
 } from 'firebase/firestore'
 import { db } from '../firebase'
 import { useSearchParams } from 'react-router-dom'
-import { AUTH0_ROLES_CLAIM } from '../types'
+import { ADMIN_EMAILS } from '../types'
 import type { Product, CartItem, PageProps } from '../types'
 import { AdminPanel } from './AdminPanel'
 import { CartSidebar } from './CartSidebar'
@@ -171,8 +171,7 @@ export const Shop: React.FC<PageProps> = ({
   const cartItemCount = cart.reduce((sum, item) => sum + item.quantity, 0)
 
   // Check if user is admin
-  const isAdmin =
-    user?.[AUTH0_ROLES_CLAIM]?.includes('admin') || false
+  const isAdmin = !!user?.email && ADMIN_EMAILS.includes(user.email)
   React.useEffect(() => {
     if (isAdmin) {
       setShowAdminPanel(true)
@@ -270,6 +269,8 @@ export const Shop: React.FC<PageProps> = ({
                   src={product.image}
                   alt={product.name}
                   className="w-full h-full object-cover"
+                  loading="lazy"
+                  decoding="async"
                 />
                 {!product.inStock && (
                   <div className="absolute bottom-0 left-0 right-0 bg-green-500/50 text-white text-center py-2">

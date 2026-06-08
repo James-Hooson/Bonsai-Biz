@@ -146,6 +146,8 @@ export const Aquascaping: React.FC<PageProps> = ({
                 src="https://images.unsplash.com/photo-1583212292454-1fe6229603b7?q=80&w=800&auto=format&fit=crop"
                 alt="Aquascape planted tank"
                 className="w-full h-full object-cover"
+                loading="lazy"
+                decoding="async"
               />
             </div>
           </div>
