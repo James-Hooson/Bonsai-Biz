@@ -6,7 +6,6 @@ import {
   Menu,
   X,
   Leaf,
-  LogIn,
   LogOut,
   User as UserIcon,
 } from 'lucide-react'
@@ -15,7 +14,6 @@ import { ADMIN_EMAILS } from '../types'
 
 interface HeaderProps {
   user?: User | null
-  onLogin?: () => void
   onLogout?: () => void
   cartItemCount?: number
   onCartOpen?: () => void
@@ -27,7 +25,6 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({
   user,
-  onLogin,
   onLogout,
   cartItemCount = 0,
   onCartOpen,
@@ -169,18 +166,16 @@ export const Header: React.FC<HeaderProps> = ({
               </Link>
             )}
 
-            {/* User/Login Section */}
-            {user ? (
+            {/* Admin Section */}
+            {user && isAdmin && (
               <div className="flex items-center gap-2">
-                {isAdmin && (
-                  <Link
-                    to="/"
-                    className="text-gray-700 hover:text-green-600 flex items-center gap-1"
-                  >
-                    <UserIcon className="w-5 h-5" />
-                    <span className="hidden sm:inline">Admin</span>
-                  </Link>
-                )}
+                <Link
+                  to="/"
+                  className="text-gray-700 hover:text-green-600 flex items-center gap-1"
+                >
+                  <UserIcon className="w-5 h-5" />
+                  <span className="hidden sm:inline">Admin</span>
+                </Link>
                 {onLogout && (
                   <button
                     onClick={onLogout}
@@ -190,26 +185,6 @@ export const Header: React.FC<HeaderProps> = ({
                   </button>
                 )}
               </div>
-            ) : (
-              <>
-                {onLogin ? (
-                  <button
-                    onClick={onLogin}
-                    className="flex items-center gap-1 text-gray-700 hover:text-green-600"
-                  >
-                    <LogIn className="w-5 h-5" />
-                    <span className="hidden sm:inline">Login</span>
-                  </button>
-                ) : (
-                  <Link
-                    to="/"
-                    className="flex items-center gap-1 text-gray-700 hover:text-green-600"
-                  >
-                    <LogIn className="w-5 h-5" />
-                    <span className="hidden sm:inline">Login</span>
-                  </Link>
-                )}
-              </>
             )}
 
             {/* Mobile Menu Button */}
