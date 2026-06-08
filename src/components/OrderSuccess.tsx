@@ -38,7 +38,8 @@ export const OrderSuccess: React.FC<PageProps> = ({
   const [loading, setLoading] = useState(!!orderId)
 
   useEffect(() => {
-    if (!orderId) {
+    if (!orderId || !isAuthenticated) {
+      setLoading(false)
       return
     }
 
@@ -61,7 +62,7 @@ export const OrderSuccess: React.FC<PageProps> = ({
     )
 
     return () => unsubscribe()
-  }, [orderId])
+  }, [orderId, isAuthenticated])
 
   const orderTotal = order?.items.reduce(
     (sum, item) => sum + item.unitPrice * item.quantity,
@@ -110,6 +111,22 @@ export const OrderSuccess: React.FC<PageProps> = ({
               className="inline-block bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition"
             >
               Return to Shop
+            </Link>
+          </div>
+        ) : !isAuthenticated ? (
+          <div className="bg-white rounded-lg shadow-sm p-8 text-center">
+            <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              Order Confirmed!
+            </h1>
+            <p className="text-gray-600 mb-8">
+              Thank you for your purchase. A confirmation has been sent to your email.
+            </p>
+            <Link
+              to="/"
+              className="inline-block bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition"
+            >
+              Continue Shopping
             </Link>
           </div>
         ) : order?.status === 'pending' ? (

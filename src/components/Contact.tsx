@@ -147,10 +147,10 @@ export const Contact: React.FC<PageProps> = ({
                   </p>
 
                   <a
-                    href="mailto:support@zenbonsai.com"
+                    href="mailto:zenoasisnz@gmail.com"
                     className="text-green-600 hover:text-green-700 font-medium"
                   >
-                    support@zenbonsai.com
+                    zenoasisnz@gmail.com
                   </a>
                 </div>
               </div>

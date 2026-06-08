@@ -28,9 +28,27 @@ export const createCheckoutSession = onRequest(
 
     const { items, deliveryMethod = 'pickup', userEmail } = req.body as CheckoutRequestBody
 
-if (!items || !Array.isArray(items) || items.length === 0) {
+    if (!items || !Array.isArray(items) || items.length === 0) {
       res.status(400).json({ error: 'Items array is required' })
       return
+    }
+
+    if (items.length > 50) {
+      res.status(400).json({ error: 'Too many items in cart' })
+      return
+    }
+
+    for (const item of items) {
+      if (
+        !item.productId ||
+        typeof item.productId !== 'string' ||
+        !Number.isInteger(item.quantity) ||
+        item.quantity < 1 ||
+        item.quantity > 99
+      ) {
+        res.status(400).json({ error: 'Invalid item in cart' })
+        return
+      }
     }
 
     const stripe = new Stripe(STRIPE_SECRET_KEY.value())
