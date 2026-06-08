@@ -7,14 +7,12 @@ import type { PageProps } from '../types'
 export const About: React.FC<PageProps> = ({
   user,
   isAuthenticated,
-  onLogin,
   onLogout,
 }) => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header
         user={isAuthenticated ? user : null}
-        onLogin={onLogin}
         onLogout={onLogout}
       />
 

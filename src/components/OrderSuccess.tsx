@@ -26,7 +26,6 @@ export const OrderSuccess: React.FC<PageProps> = ({
   user,
   isAuthenticated,
   isLoading,
-  onLogin,
   onLogout,
 }) => {
   const [searchParams] = useSearchParams()
@@ -83,7 +82,6 @@ export const OrderSuccess: React.FC<PageProps> = ({
     <div className="min-h-screen bg-gray-50">
       <Header
         user={isAuthenticated ? user : null}
-        onLogin={onLogin}
         onLogout={onLogout}
         cartItemCount={0}
         onCartOpen={() => {}}

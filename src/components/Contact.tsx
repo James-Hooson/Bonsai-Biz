@@ -7,7 +7,6 @@ import type { PageProps } from '../types'
 export const Contact: React.FC<PageProps> = ({
   user,
   isAuthenticated,
-  onLogin,
   onLogout,
 }) => {
   const [formData, setFormData] = useState({
@@ -27,7 +26,6 @@ export const Contact: React.FC<PageProps> = ({
     <div className="min-h-screen bg-gray-50">
       <Header
         user={isAuthenticated ? user : null}
-        onLogin={onLogin}
         onLogout={onLogout}
       />
 

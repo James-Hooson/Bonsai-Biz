@@ -21,7 +21,6 @@ export const Shop: React.FC<PageProps> = ({
   user,
   isAuthenticated,
   isLoading,
-  onLogin,
   onLogout,
 }) => {
   const [searchParams] = useSearchParams()
@@ -193,7 +192,6 @@ export const Shop: React.FC<PageProps> = ({
       {/* Header */}
       <Header
         user={isAuthenticated ? user : null}
-        onLogin={onLogin}
         onLogout={onLogout}
         cartItemCount={cartItemCount}
         onCartOpen={() => setCartOpen(true)}
