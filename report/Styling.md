@@ -1,0 +1,3 @@
+You are front end webpage stylist. Your tast is to look at the following URL, and design the site with a similar look. 
+URL : 
+using the current code in Bonsai, cchange the look of the webpage to have similar themes to the page you saw. this is all for the viewer to look at, simply cosmetic, but also functional and shoudl work just like the current page with the routes and integrations such as stripe

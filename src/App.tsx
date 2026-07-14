@@ -1,6 +1,9 @@
-import React, { Suspense, lazy, useEffect } from 'react'
+import React, { Suspense, lazy, useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom'
 import { useAuth0 } from '@auth0/auth0-react'
+import { onAuthStateChanged } from 'firebase/auth'
+import { auth } from './firebase'
+import { syncFirebaseAuth, clearFirebaseAuth } from './lib/firebaseAuthBridge'
 
 const Shop = lazy(() => import('./components/Shop').then(m => ({ default: m.Shop })))
 const About = lazy(() => import('./components/About').then(m => ({ default: m.About })))
@@ -26,13 +29,37 @@ const AdminLogin: React.FC = () => {
 }
 
 const App: React.FC = () => {
-  const { loginWithRedirect, logout, user, isAuthenticated, isLoading } =
+  const { loginWithRedirect, logout, user, isAuthenticated, isLoading, getIdTokenClaims } =
     useAuth0()
+  const [firebaseUser, setFirebaseUser] = useState(auth.currentUser)
+
+  useEffect(() => onAuthStateChanged(auth, setFirebaseUser), [])
+
+  useEffect(() => {
+    if (isLoading) return
+
+    if (!isAuthenticated) {
+      clearFirebaseAuth().catch((error) => console.error('Failed to clear Firebase session:', error))
+      return
+    }
+
+    getIdTokenClaims()
+      .then((claims) => {
+        if (!claims?.__raw) return
+        return syncFirebaseAuth(claims.__raw)
+      })
+      .catch((error) => console.error('Failed to sync Firebase session:', error))
+  }, [isAuthenticated, isLoading, getIdTokenClaims])
+
+  // Firestore rules require a Firebase Auth session (minted from the Auth0 token).
+  // Admin reads/writes should wait for this to avoid a permission-denied race right after login.
+  const firebaseReady = !isAuthenticated || !!firebaseUser
 
   const authProps = {
     user,
     isAuthenticated,
     isLoading,
+    firebaseReady,
     onLogin: () => loginWithRedirect(),
     onLogout: () => logout({ logoutParams: { returnTo: window.location.origin } }),
   }

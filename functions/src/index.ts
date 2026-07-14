@@ -4,3 +4,4 @@ admin.initializeApp()
 
 export { createCheckoutSession } from './createCheckoutSession'
 export { stripeWebhook } from './stripeWebhook'
+export { mintFirebaseToken } from './mintFirebaseToken'

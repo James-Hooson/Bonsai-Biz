@@ -21,6 +21,7 @@ export const Shop: React.FC<PageProps> = ({
   user,
   isAuthenticated,
   isLoading,
+  firebaseReady,
   onLogout,
 }) => {
   const [searchParams] = useSearchParams()
@@ -83,6 +84,10 @@ export const Shop: React.FC<PageProps> = ({
 
   // Product Management
   const handleSaveProduct = async (product: Product) => {
+    if (!firebaseReady) {
+      alert('Admin session is still syncing. Please wait a moment and try again.')
+      return
+    }
     if (editingProduct) {
       // Update existing
       const { id, ...productData } = product
@@ -101,6 +106,10 @@ export const Shop: React.FC<PageProps> = ({
   }
 
   const handleDeleteProduct = async (id: string) => {
+    if (!firebaseReady) {
+      alert('Admin session is still syncing. Please wait a moment and try again.')
+      return
+    }
     if (confirm('Are you sure you want to delete this product?')) {
       await deleteDoc(doc(db, 'products', id))
       setProducts((prev) => prev.filter((p) => p.id !== id))
@@ -210,7 +219,7 @@ export const Shop: React.FC<PageProps> = ({
       />
       {/* Admin Panel */}
       {showAdminPanel && isAdmin && (
-        <AdminPanel onAddProduct={() => setShowAddProduct(true)} />
+        <AdminPanel onAddProduct={() => setShowAddProduct(true)} ready={firebaseReady} />
       )}
 
       {/* Hero Section */}
@@ -284,16 +293,18 @@ export const Shop: React.FC<PageProps> = ({
                   </div>
                 )}
                 {showAdminPanel && isAdmin && (
-                  <div className="absolute top-2 right-2 flex gap-2">
+                  <div className={`absolute top-2 right-2 flex gap-2 ${!firebaseReady ? 'opacity-50' : ''}`}>
                     <button
                       onClick={() => setEditingProduct(product)}
-                      className="bg-white p-2 rounded-full shadow hover:bg-gray-100"
+                      disabled={!firebaseReady}
+                      className="bg-white p-2 rounded-full shadow hover:bg-gray-100 disabled:cursor-not-allowed"
                     >
                       <Edit className="w-4 h-4 text-blue-600" />
                     </button>
                     <button
                       onClick={() => handleDeleteProduct(product.id)}
-                      className="bg-white p-2 rounded-full shadow hover:bg-gray-100"
+                      disabled={!firebaseReady}
+                      className="bg-white p-2 rounded-full shadow hover:bg-gray-100 disabled:cursor-not-allowed"
                     >
                       <Trash2 className="w-4 h-4 text-red-600" />
                     </button>

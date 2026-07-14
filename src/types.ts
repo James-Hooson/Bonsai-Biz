@@ -4,6 +4,7 @@ export interface PageProps {
   user: User | undefined
   isAuthenticated: boolean
   isLoading: boolean
+  firebaseReady: boolean
   onLogin: () => void
   onLogout: () => void
 }

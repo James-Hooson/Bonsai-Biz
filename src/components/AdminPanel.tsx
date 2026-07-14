@@ -25,13 +25,15 @@ interface Order {
 
 interface AdminPanelProps {
   onAddProduct: () => void
+  ready: boolean
 }
 
-export const AdminPanel: React.FC<AdminPanelProps> = ({ onAddProduct }) => {
+export const AdminPanel: React.FC<AdminPanelProps> = ({ onAddProduct, ready }) => {
   const [orders, setOrders] = React.useState<Order[]>([])
   const [tab, setTab] = React.useState<'orders' | 'products'>('orders')
 
   React.useEffect(() => {
+    if (!ready) return
     const q = query(collection(db, 'orders'), orderBy('createdAt', 'desc'))
     const unsub = onSnapshot(q, (snap) => {
       setOrders(
@@ -39,7 +41,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onAddProduct }) => {
       )
     })
     return unsub
-  }, [])
+  }, [ready])
 
   return (
     <div className="bg-blue-50 border-b border-blue-200">
@@ -74,7 +76,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onAddProduct }) => {
           {tab === 'products' && (
             <button
               onClick={onAddProduct}
-              className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+              disabled={!ready}
+              className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Plus className="w-4 h-4" />
               Add Product
@@ -85,7 +88,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onAddProduct }) => {
         {/* Orders tab */}
         {tab === 'orders' && (
           <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-1">
-            {orders.length === 0 ? (
+            {!ready ? (
+              <p className="text-blue-700 text-sm py-2 flex items-center gap-2">
+                <RefreshCw className="w-4 h-4 animate-spin" /> Syncing admin session…
+              </p>
+            ) : orders.length === 0 ? (
               <p className="text-blue-700 text-sm py-2">No orders yet.</p>
             ) : (
               orders.map((order) => (
