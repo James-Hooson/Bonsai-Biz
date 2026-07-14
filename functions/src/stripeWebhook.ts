@@ -70,6 +70,29 @@ export const stripeWebhook = onRequest(
           }
           await db.collection('orders').doc(orderId).update(updateData)
           console.log(`Order ${orderId} marked as completed`)
+
+          // Deduct stock for each purchased item
+          const orderDoc = await db.collection('orders').doc(orderId).get()
+          const orderData = orderDoc.data()
+          if (orderData?.items) {
+            await Promise.all(
+              orderData.items.map(
+                async (item: { productId: string; quantity: number }) => {
+                  const productRef = db.collection('products').doc(item.productId)
+                  await db.runTransaction(async (tx) => {
+                    const productSnap = await tx.get(productRef)
+                    if (!productSnap.exists) return
+                    const currentStock: number = productSnap.data()?.stock ?? 0
+                    const newStock = Math.max(0, currentStock - item.quantity)
+                    tx.update(productRef, {
+                      stock: newStock,
+                      inStock: newStock > 0,
+                    })
+                  })
+                },
+              ),
+            )
+          }
         } catch (error) {
           console.error(`Failed to update order ${orderId}:`, error)
         }

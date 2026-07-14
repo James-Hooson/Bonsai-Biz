@@ -16,9 +16,9 @@ export const ProductModal: React.FC<{
       price: 0,
       image: '',
       mainCategory: 'bonsai',
-      skillLevel: 'beginner',
       rating: 5.0,
       inStock: true,
+      stock: 0,
       description: '',
     },
   )
@@ -71,40 +71,22 @@ export const ProductModal: React.FC<{
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Main Category
-                </label>
-                <select
-                  value={formData.mainCategory}
-                  onChange={(e) =>
-                    setFormData({ ...formData, mainCategory: e.target.value })
-                  }
-                  className="w-full border rounded-lg px-4 py-2"
-                >
-                  <option value="bonsai">Bonsai</option>
-                  <option value="houseplants">House Plants</option>
-                  <option value="tanks">Tanks</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Skill Level
-                </label>
-                <select
-                  value={formData.skillLevel}
-                  onChange={(e) =>
-                    setFormData({ ...formData, skillLevel: e.target.value })
-                  }
-                  className="w-full border rounded-lg px-4 py-2"
-                >
-                  <option value="beginner">Beginner</option>
-                  <option value="intermediate">Intermediate</option>
-                  <option value="advanced">Advanced</option>
-                </select>
-              </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Category
+              </label>
+              <select
+                value={formData.mainCategory}
+                onChange={(e) =>
+                  setFormData({ ...formData, mainCategory: e.target.value })
+                }
+                className="w-full border rounded-lg px-4 py-2"
+              >
+                <option value="bonsai">Bonsai Trees</option>
+                <option value="potted-plants">Potted Plants</option>
+                <option value="aquatic-plants">Aquatic Plants</option>
+                <option value="tanks">Tanks</option>
+              </select>
             </div>
 
             <div>
@@ -163,21 +145,19 @@ export const ProductModal: React.FC<{
 
             <div>
               <label className="block text-sm font-medium mb-2">
-                Stock Status
+                Stock Count
               </label>
-              <select
-                value={formData.inStock ? 'true' : 'false'}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    inStock: e.target.value === 'true',
-                  })
-                }
+              <input
+                type="number"
+                min="0"
+                step="1"
+                value={formData.stock}
+                onChange={(e) => {
+                  const stock = Math.max(0, parseInt(e.target.value) || 0)
+                  setFormData({ ...formData, stock, inStock: stock > 0 })
+                }}
                 className="w-full border rounded-lg px-4 py-2"
-              >
-                <option value="true">In Stock</option>
-                <option value="false">Out of Stock</option>
-              </select>
+              />
             </div>
 
             <div>

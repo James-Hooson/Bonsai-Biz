@@ -28,7 +28,6 @@ export const Shop: React.FC<PageProps> = ({
   const [cartOpen, setCartOpen] = useState(false)
   const [cart, setCart] = useState<CartItem[]>([])
   const [mainCategory, setMainCategory] = useState(urlCategory || 'all')
-  const [selectedCategory, setSelectedCategory] = useState('all')
   const [showAdminPanel, setShowAdminPanel] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [showAddProduct, setShowAddProduct] = useState(false)
@@ -37,7 +36,18 @@ export const Shop: React.FC<PageProps> = ({
   const [searchQuery, setSearchQuery] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const skillLevels = ['all', 'beginner', 'intermediate', 'advanced']
+  const allCategories: { value: string; label: string }[] = [
+    { value: 'bonsai', label: 'Bonsai Trees' },
+    { value: 'potted-plants', label: 'Potted Plants' },
+    { value: 'aquatic-plants', label: 'Aquatic Plants' },
+    { value: 'tanks', label: 'Tanks' },
+  ]
+
+  const usedCategoryValues = new Set(products.map((p) => p.mainCategory))
+  const visibleCategories = [
+    { value: 'all', label: 'All' },
+    ...allCategories.filter((c) => usedCategoryValues.has(c.value)),
+  ]
 
   useEffect(() => {
     setMainCategory(urlCategory || 'all')
@@ -56,7 +66,8 @@ export const Shop: React.FC<PageProps> = ({
             id: docSnap.id,
             ...data,
             mainCategory: data.mainCategory || 'bonsai',
-            skillLevel: data.skillLevel || data.category || 'beginner',
+            stock: data.stock ?? 0,
+            inStock: data.stock !== undefined ? data.stock > 0 : (data.inStock ?? true),
           } as Product)
         })
         setProducts(loadedProducts)
@@ -158,9 +169,6 @@ export const Shop: React.FC<PageProps> = ({
   const filteredProducts = products
     .filter((p) => mainCategory === 'all' || p.mainCategory === mainCategory)
     .filter(
-      (p) => selectedCategory === 'all' || p.skillLevel === selectedCategory,
-    )
-    .filter(
       (p) =>
         searchQuery === '' ||
         p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -219,25 +227,25 @@ export const Shop: React.FC<PageProps> = ({
         </div>
       </section>
 
-      {/* Skill Level Filter */}
-<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-  <p className="text-sm text-gray-600 text-center mb-2">Filter by skill level:</p>
-  <div className="flex gap-4 overflow-x-auto pb-2 justify-center">
-   {skillLevels.map((level) => (
-  <button
-    key={level}
-    onClick={() => setSelectedCategory(level)}
-    className={`px-6 py-2 rounded-full whitespace-nowrap transition ${
-      selectedCategory === level
-        ? 'bg-green-600 text-white'
-        : 'bg-white text-gray-700 hover:bg-gray-100'
-    }`}
-  >
-    {level.charAt(0).toUpperCase() + level.slice(1)}
-  </button>
-))}
-</div>
-</div>
+      {/* Category Filter */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <p className="text-sm text-gray-600 text-center mb-2">Filter by category:</p>
+        <div className="flex gap-4 overflow-x-auto pb-2 justify-center">
+          {visibleCategories.map((cat) => (
+            <button
+              key={cat.value}
+              onClick={() => setMainCategory(cat.value)}
+              className={`px-6 py-2 rounded-full whitespace-nowrap transition ${
+                mainCategory === cat.value
+                  ? 'bg-green-600 text-white'
+                  : 'bg-white text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              {cat.label}
+            </button>
+          ))}
+        </div>
+      </div>
 
       {/* Products Grid */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">

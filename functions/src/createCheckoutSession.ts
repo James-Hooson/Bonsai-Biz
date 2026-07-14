@@ -76,10 +76,15 @@ export const createCheckoutSession = onRequest(
         }
 
         const productData = productDoc.data()!
-        if (!productData.inStock) {
-          res
-            .status(400)
-            .json({ error: `Product ${productData.name} is out of stock` })
+        const availableStock: number = productData.stock ?? 0
+        if (availableStock <= 0) {
+          res.status(400).json({ error: `${productData.name} is out of stock` })
+          return
+        }
+        if (availableStock < item.quantity) {
+          res.status(400).json({
+            error: `Only ${availableStock} of ${productData.name} available`,
+          })
           return
         }
 
