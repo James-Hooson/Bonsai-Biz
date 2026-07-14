@@ -34,29 +34,23 @@ export const OrderSuccess: React.FC<PageProps> = ({
   const [error, setError] = useState<string | null>(
     orderId ? null : 'Order ID not found'
   )
-  const [loading, setLoading] = useState(!!orderId)
+  const loading = !!orderId && isAuthenticated && !order && !error
 
   useEffect(() => {
-    if (!orderId || !isAuthenticated) {
-      setLoading(false)
-      return
-    }
+    if (!orderId || !isAuthenticated) return
 
     const unsubscribe = onSnapshot(
       doc(db, 'orders', orderId),
       (docSnap) => {
         if (docSnap.exists()) {
           setOrder(docSnap.data() as Order)
-          setLoading(false)
         } else {
           setError('Order not found')
-          setLoading(false)
         }
       },
       (err) => {
         console.error('Error fetching order:', err)
         setError('Failed to load order')
-        setLoading(false)
       }
     )
 

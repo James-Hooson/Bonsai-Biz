@@ -13,7 +13,7 @@ export const stripeWebhook = onRequest(
     const sig = req.headers['stripe-signature'] as string
 
     // Firebase Functions provides rawBody for signature verification
-    const rawBody = (req as any).rawBody
+    const rawBody = req.rawBody
 
     if (!rawBody) {
       console.error('No raw body available')
@@ -43,9 +43,11 @@ export const stripeWebhook = onRequest(
 
       if (orderId) {
         try {
+          const db = admin.firestore()
+          const orderRef = db.collection('orders').doc(orderId)
+
           // Re-fetch the full session so shipping_details is populated
           const session = await stripe.checkout.sessions.retrieve(sessionStub.id)
-          const db = admin.firestore()
           const updateData: Record<string, unknown> = {
             status: 'completed',
             stripePaymentIntentId: session.payment_intent,
@@ -68,31 +70,40 @@ export const stripeWebhook = onRequest(
               country: addr.country ?? null,
             }
           }
-          await db.collection('orders').doc(orderId).update(updateData)
+
+          // Stripe redelivers webhook events at-least-once. Atomically flip
+          // status to 'completed' only once, so a duplicate delivery can't
+          // deduct stock twice for the same order.
+          const orderItems = await db.runTransaction(async (tx) => {
+            const snap = await tx.get(orderRef)
+            if (snap.data()?.status === 'completed') return null
+            tx.update(orderRef, updateData as admin.firestore.UpdateData<admin.firestore.DocumentData>)
+            return (snap.data()?.items ?? []) as Array<{ productId: string; quantity: number }>
+          })
+
+          if (orderItems === null) {
+            console.log(`Order ${orderId} already completed, skipping duplicate webhook delivery`)
+            res.status(200).json({ received: true })
+            return
+          }
           console.log(`Order ${orderId} marked as completed`)
 
           // Deduct stock for each purchased item
-          const orderDoc = await db.collection('orders').doc(orderId).get()
-          const orderData = orderDoc.data()
-          if (orderData?.items) {
-            await Promise.all(
-              orderData.items.map(
-                async (item: { productId: string; quantity: number }) => {
-                  const productRef = db.collection('products').doc(item.productId)
-                  await db.runTransaction(async (tx) => {
-                    const productSnap = await tx.get(productRef)
-                    if (!productSnap.exists) return
-                    const currentStock: number = productSnap.data()?.stock ?? 0
-                    const newStock = Math.max(0, currentStock - item.quantity)
-                    tx.update(productRef, {
-                      stock: newStock,
-                      inStock: newStock > 0,
-                    })
-                  })
-                },
-              ),
-            )
-          }
+          await Promise.all(
+            orderItems.map(async (item) => {
+              const productRef = db.collection('products').doc(item.productId)
+              await db.runTransaction(async (tx) => {
+                const productSnap = await tx.get(productRef)
+                if (!productSnap.exists) return
+                const currentStock: number = productSnap.data()?.stock ?? 0
+                const newStock = Math.max(0, currentStock - item.quantity)
+                tx.update(productRef, {
+                  stock: newStock,
+                  inStock: newStock > 0,
+                })
+              })
+            }),
+          )
         } catch (error) {
           console.error(`Failed to update order ${orderId}:`, error)
         }
