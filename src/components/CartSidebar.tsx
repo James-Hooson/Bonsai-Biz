@@ -11,7 +11,7 @@ interface CartSidebarProps {
   onClose: () => void
   onUpdateQuantity: (id: string, quantity: number) => void
   onRemove: (id: string) => void
-  onCheckout: (deliveryMethod: DeliveryMethod) => Promise<void>
+  onCheckout: (deliveryMethod: DeliveryMethod, idempotencyKey: string) => Promise<void>
 }
 
 export const CartSidebar: React.FC<CartSidebarProps> = ({
@@ -24,12 +24,15 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
   const [isCheckingOut, setIsCheckingOut] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
   const [deliveryMethod, setDeliveryMethod] = React.useState<DeliveryMethod>('pickup')
+  // Stable across retries so a resubmission after a network error/timeout
+  // reuses the same key instead of creating a duplicate order + Stripe session.
+  const idempotencyKeyRef = React.useRef(crypto.randomUUID())
 
   const handleCheckoutClick = async () => {
     setIsCheckingOut(true)
     setError(null)
     try {
-      await onCheckout(deliveryMethod)
+      await onCheckout(deliveryMethod, idempotencyKeyRef.current)
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Checkout failed'
       console.error('Checkout error:', err)

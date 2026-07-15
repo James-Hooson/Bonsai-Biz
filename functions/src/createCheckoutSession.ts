@@ -2,8 +2,14 @@ import { onRequest } from 'firebase-functions/v2/https'
 import { defineSecret } from 'firebase-functions/params'
 import * as admin from 'firebase-admin'
 import Stripe from 'stripe'
+import { randomUUID } from 'node:crypto'
 
 const STRIPE_SECRET_KEY = defineSecret('STRIPE_SECRET_KEY')
+
+const ALLOWED_ORIGINS = [
+  process.env.BASE_URL || 'http://localhost:5173',
+  'http://localhost:5173',
+]
 
 interface CheckoutItem {
   productId: string
@@ -16,17 +22,24 @@ interface CheckoutRequestBody {
   items: CheckoutItem[]
   deliveryMethod?: 'pickup' | 'delivery'
   userEmail?: string
+  idempotencyKey?: string
+}
+
+function isValidIdempotencyKey(value: unknown): value is string {
+  return typeof value === 'string' && /^[a-zA-Z0-9-]{1,100}$/.test(value)
 }
 
 export const createCheckoutSession = onRequest(
-  { cors: true, secrets: [STRIPE_SECRET_KEY] },
+  { cors: ALLOWED_ORIGINS, maxInstances: 20, secrets: [STRIPE_SECRET_KEY] },
   async (req, res) => {
     if (req.method !== 'POST') {
       res.status(405).json({ error: 'Method not allowed' })
       return
     }
 
-    const { items, deliveryMethod = 'pickup', userEmail } = req.body as CheckoutRequestBody
+    const { items, deliveryMethod = 'pickup', userEmail, idempotencyKey: rawIdempotencyKey } =
+      req.body as CheckoutRequestBody
+    const idempotencyKey = isValidIdempotencyKey(rawIdempotencyKey) ? rawIdempotencyKey : randomUUID()
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       res.status(400).json({ error: 'Items array is required' })
@@ -71,7 +84,8 @@ export const createCheckoutSession = onRequest(
           .get()
 
         if (!productDoc.exists) {
-          res.status(400).json({ error: `Product ${item.productId} not found` })
+          console.error(`Checkout attempted with unknown product ${item.productId}`)
+          res.status(400).json({ error: 'One or more items in your cart are unavailable' })
           return
         }
 
@@ -82,8 +96,11 @@ export const createCheckoutSession = onRequest(
           return
         }
         if (availableStock < item.quantity) {
+          console.error(
+            `Checkout requested quantity ${item.quantity} for ${item.productId} but only ${availableStock} in stock`
+          )
           res.status(400).json({
-            error: `Only ${availableStock} of ${productData.name} available`,
+            error: `Not enough ${productData.name} in stock for the requested quantity`,
           })
           return
         }
@@ -120,17 +137,34 @@ export const createCheckoutSession = onRequest(
         })
       }
 
-      // Create pending order in Firestore
-      const orderRef = await db.collection('orders').add({
-        status: 'pending',
-        userEmail: userEmail || null,
-        items: orderItems,
-        deliveryMethod,
-        stripeSessionId: null,
-        stripePaymentIntentId: null,
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      })
+      // Create the pending order under a deterministic ID derived from the
+      // client's idempotency key, so a retried request (e.g. after a network
+      // timeout) reuses the same order/session instead of creating a duplicate.
+      const orderRef = db.collection('orders').doc(idempotencyKey)
+      let existingSessionId: string | null = null
+
+      try {
+        await orderRef.create({
+          status: 'pending',
+          userEmail: userEmail || null,
+          items: orderItems,
+          deliveryMethod,
+          stripeSessionId: null,
+          stripePaymentIntentId: null,
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        })
+      } catch {
+        // Order already exists for this idempotency key - this is a retry.
+        const existing = await orderRef.get()
+        existingSessionId = existing.data()?.stripeSessionId ?? null
+      }
+
+      if (existingSessionId) {
+        const existingSession = await stripe.checkout.sessions.retrieve(existingSessionId)
+        res.json({ url: existingSession.url })
+        return
+      }
 
       const baseUrl = process.env.BASE_URL || 'http://localhost:5173'
 
@@ -149,7 +183,7 @@ export const createCheckoutSession = onRequest(
           orderId: orderRef.id,
           deliveryMethod,
         },
-      })
+      }, { idempotencyKey })
 
       // Update order with Stripe session ID
       await orderRef.update({

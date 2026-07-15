@@ -15,7 +15,7 @@ interface OrderItem {
 }
 
 interface Order {
-  status: 'pending' | 'completed'
+  status: 'pending' | 'completed' | 'expired'
   userEmail: string
   items: OrderItem[]
   stripeSessionId: string | null
@@ -130,6 +130,22 @@ export const OrderSuccess: React.FC<PageProps> = ({
             <p className="text-gray-600">
               Please wait while we confirm your payment.
             </p>
+          </div>
+        ) : order?.status === 'expired' ? (
+          <div className="text-center">
+            <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+              Checkout Session Expired
+            </h1>
+            <p className="text-gray-600 mb-8">
+              This checkout session was never completed and has expired. No payment was taken.
+            </p>
+            <Link
+              to="/"
+              className="inline-block bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition"
+            >
+              Return to Shop
+            </Link>
           </div>
         ) : (
           <div className="bg-white rounded-lg shadow-sm p-8">

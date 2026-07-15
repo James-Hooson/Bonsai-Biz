@@ -145,7 +145,7 @@ export const Shop: React.FC<PageProps> = ({
     )
   }
 
-  const handleCheckout = async (deliveryMethod: 'pickup' | 'delivery') => {
+  const handleCheckout = async (deliveryMethod: 'pickup' | 'delivery', idempotencyKey: string) => {
     const items = cart.map((item) => ({
       productId: item.id,
       quantity: item.quantity,
@@ -162,6 +162,7 @@ export const Shop: React.FC<PageProps> = ({
           items,
           deliveryMethod,
           userEmail: user?.email,
+          idempotencyKey,
         }),
       }
     )

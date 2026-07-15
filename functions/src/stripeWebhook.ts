@@ -110,6 +110,31 @@ export const stripeWebhook = onRequest(
       }
     }
 
+    // Stripe expires an unpaid Checkout Session ~24h after creation and fires
+    // this event. Mark the abandoned order so it doesn't sit as 'pending' forever.
+    if (event.type === 'checkout.session.expired') {
+      const session = event.data.object as Stripe.Checkout.Session
+      const orderId = session.metadata?.orderId
+
+      if (orderId) {
+        try {
+          const db = admin.firestore()
+          const orderRef = db.collection('orders').doc(orderId)
+          await db.runTransaction(async (tx) => {
+            const snap = await tx.get(orderRef)
+            if (snap.data()?.status !== 'pending') return
+            tx.update(orderRef, {
+              status: 'expired',
+              updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            })
+          })
+          console.log(`Order ${orderId} marked as expired`)
+        } catch (error) {
+          console.error(`Failed to mark order ${orderId} as expired:`, error)
+        }
+      }
+    }
+
     // Return 200 for all events (so Stripe stops retrying)
     res.status(200).json({ received: true })
   }

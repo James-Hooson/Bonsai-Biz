@@ -115,6 +115,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onAddProduct, ready }) =
                           className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                             order.status === 'completed'
                               ? 'bg-green-100 text-green-700'
+                              : order.status === 'expired'
+                              ? 'bg-gray-100 text-gray-500'
                               : 'bg-yellow-100 text-yellow-700'
                           }`}
                         >
