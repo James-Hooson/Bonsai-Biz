@@ -15,11 +15,38 @@ export const Contact: React.FC<PageProps> = ({
     subject: '',
     message: '',
   })
+  const [submitting, setSubmitting] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    alert('Thank you for your message! We will get back to you soon.')
-    setFormData({ name: '', email: '', subject: '', message: '' })
+    if (!formData.name.trim() || !formData.email.trim() || !formData.message.trim()) {
+      alert('Please fill in your name, email, and message.')
+      return
+    }
+
+    setSubmitting(true)
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_FUNCTIONS_BASE_URL}/sendContactEmail`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData),
+        }
+      )
+
+      if (!response.ok) {
+        throw new Error('Failed to send message')
+      }
+
+      alert('Thank you for your message! We will get back to you soon.')
+      setFormData({ name: '', email: '', subject: '', message: '' })
+    } catch (error) {
+      console.error('Failed to send contact message:', error)
+      alert('Sorry, something went wrong sending your message. Please email us directly at zenoasisnz@gmail.com.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -57,13 +84,14 @@ export const Contact: React.FC<PageProps> = ({
               share your bonsai journey, fill out the form below.
             </p>
 
-            <div className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Your Name
                 </label>
                 <input
                   type="text"
+                  required
                   value={formData.name}
                   onChange={(e) =>
                     setFormData({ ...formData, name: e.target.value })
@@ -79,6 +107,8 @@ export const Contact: React.FC<PageProps> = ({
                 </label>
                 <input
                   type="email"
+                  required
+                  autoComplete="email"
                   value={formData.email}
                   onChange={(e) =>
                     setFormData({ ...formData, email: e.target.value })
@@ -108,6 +138,7 @@ export const Contact: React.FC<PageProps> = ({
                   Message
                 </label>
                 <textarea
+                  required
                   value={formData.message}
                   onChange={(e) =>
                     setFormData({ ...formData, message: e.target.value })
@@ -119,13 +150,14 @@ export const Contact: React.FC<PageProps> = ({
               </div>
 
               <button
-                onClick={handleSubmit}
-                className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition flex items-center justify-center gap-2"
+                type="submit"
+                disabled={submitting}
+                className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition flex items-center justify-center gap-2 disabled:bg-gray-300 disabled:cursor-not-allowed"
               >
                 <Send className="w-5 h-5" />
-                Send Message
+                {submitting ? 'Sending...' : 'Send Message'}
               </button>
-            </div>
+            </form>
           </div>
 
           {/* Contact Information */}
