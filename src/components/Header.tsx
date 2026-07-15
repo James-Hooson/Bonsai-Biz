@@ -35,7 +35,14 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false)
   const [shopDropdownOpen, setShopDropdownOpen] = React.useState(false)
+  const shopDropdownRef = React.useRef<HTMLDivElement>(null)
   const isAdmin = !!user?.email && ADMIN_EMAILS.includes(user.email)
+
+  const closeShopDropdownOnBlur = (e: React.FocusEvent) => {
+    if (!shopDropdownRef.current?.contains(e.relatedTarget as Node)) {
+      setShopDropdownOpen(false)
+    }
+  }
   return (
     <header className="bg-white shadow-sm sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -47,31 +54,55 @@ export const Header: React.FC<HeaderProps> = ({
 
           <nav className="hidden md:flex items-center gap-6">
             <div
+              ref={shopDropdownRef}
               className="relative"
               onMouseEnter={() => setShopDropdownOpen(true)}
               onMouseLeave={() => setShopDropdownOpen(false)}
+              onBlur={closeShopDropdownOnBlur}
+              onKeyDown={(e) => {
+                if (e.key === 'Escape') setShopDropdownOpen(false)
+              }}
             >
-              <Link to="/" className="text-gray-700 hover:text-green-600 flex items-center gap-1">
-                Shop
-                <svg
-                  className={`w-4 h-4 transition-transform ${shopDropdownOpen ? 'rotate-180' : ''}`}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+              <div className="flex items-center gap-1">
+                <Link to="/" className="text-gray-700 hover:text-green-600">
+                  Shop
+                </Link>
+                <button
+                  type="button"
+                  aria-expanded={shopDropdownOpen}
+                  aria-haspopup="true"
+                  aria-controls="shop-dropdown-menu"
+                  aria-label="Toggle shop categories"
+                  onClick={() => setShopDropdownOpen((prev) => !prev)}
+                  onFocus={() => setShopDropdownOpen(true)}
+                  className="text-gray-700 hover:text-green-600"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
-              </Link>
+                  <svg
+                    aria-hidden="true"
+                    className={`w-4 h-4 transition-transform ${shopDropdownOpen ? 'rotate-180' : ''}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </button>
+              </div>
 
               {shopDropdownOpen && (
-                <div className="absolute top-full left-0 w-48 bg-white shadow-lg rounded-lg pt-1 pb-2 z-50">
+                <div
+                  id="shop-dropdown-menu"
+                  role="menu"
+                  className="absolute top-full left-0 w-48 bg-white shadow-lg rounded-lg pt-1 pb-2 z-50"
+                >
                   <Link
                     to="/?category=bonsai"
+                    role="menuitem"
                     className="block px-4 py-2 text-gray-700 hover:bg-green-50 hover:text-green-600"
                     onClick={() => setShopDropdownOpen(false)}
                   >
@@ -79,6 +110,7 @@ export const Header: React.FC<HeaderProps> = ({
                   </Link>
                   <Link
                     to="/?category=houseplants"
+                    role="menuitem"
                     className="block px-4 py-2 text-gray-700 hover:bg-green-50 hover:text-green-600"
                     onClick={() => setShopDropdownOpen(false)}
                   >
@@ -86,6 +118,7 @@ export const Header: React.FC<HeaderProps> = ({
                   </Link>
                   <Link
                     to="/?category=tanks"
+                    role="menuitem"
                     className="block px-4 py-2 text-gray-700 hover:bg-green-50 hover:text-green-600"
                     onClick={() => setShopDropdownOpen(false)}
                   >
@@ -94,6 +127,7 @@ export const Header: React.FC<HeaderProps> = ({
                   <div className="border-t border-gray-200 my-1"></div>
                   <Link
                     to="/"
+                    role="menuitem"
                     className="block px-4 py-2 text-gray-700 hover:bg-green-50 hover:text-green-600"
                     onClick={() => setShopDropdownOpen(false)}
                   >
@@ -129,6 +163,8 @@ export const Header: React.FC<HeaderProps> = ({
                 <input
                   type="text"
                   placeholder="Search..."
+                  aria-label="Search products"
+                  autoComplete="off"
                   value={searchQuery}
                   onChange={(e) => onSearchChange?.(e.target.value)}
                   className="border border-gray-300 rounded-lg px-4 py-2 w-64 focus:ring-2 focus:ring-green-600 focus:border-transparent"
@@ -138,9 +174,11 @@ export const Header: React.FC<HeaderProps> = ({
               {onSearchClick && (
                 <button
                   onClick={onSearchClick}
+                  aria-expanded={searchOpen}
+                  aria-label={searchOpen ? 'Close search' : 'Open search'}
                   className="text-gray-700 hover:text-green-600"
                 >
-                  <Search className="w-6 h-6" />
+                  <Search aria-hidden="true" className="w-6 h-6" />
                 </button>
               )}
             </div>
@@ -149,9 +187,10 @@ export const Header: React.FC<HeaderProps> = ({
             {onCartOpen && (
               <button
                 onClick={onCartOpen}
+                aria-label={`Open cart${cartItemCount > 0 ? ` (${cartItemCount} item${cartItemCount === 1 ? '' : 's'})` : ''}`}
                 className="relative text-gray-700 hover:text-green-600"
               >
-                <ShoppingCart className="w-6 h-6" />
+                <ShoppingCart aria-hidden="true" className="w-6 h-6" />
                 {cartItemCount > 0 && (
                   <span className="absolute -top-2 -right-2 bg-green-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                     {cartItemCount}
@@ -161,8 +200,8 @@ export const Header: React.FC<HeaderProps> = ({
             )}
 
             {!onCartOpen && (
-              <Link to="/" className="text-gray-700 hover:text-green-600">
-                <ShoppingCart className="w-6 h-6" />
+              <Link to="/" aria-label="Go to shop" className="text-gray-700 hover:text-green-600">
+                <ShoppingCart aria-hidden="true" className="w-6 h-6" />
               </Link>
             )}
 
@@ -171,17 +210,19 @@ export const Header: React.FC<HeaderProps> = ({
               <div className="flex items-center gap-2">
                 <Link
                   to="/"
+                  aria-label="Admin"
                   className="text-gray-700 hover:text-green-600 flex items-center gap-1"
                 >
-                  <UserIcon className="w-5 h-5" />
-                  <span className="hidden sm:inline">Admin</span>
+                  <UserIcon aria-hidden="true" className="w-5 h-5" />
+                  <span className="hidden sm:inline" aria-hidden="true">Admin</span>
                 </Link>
                 {onLogout && (
                   <button
                     onClick={onLogout}
+                    aria-label="Log out"
                     className="text-gray-700 hover:text-green-600"
                   >
-                    <LogOut className="w-5 h-5" />
+                    <LogOut aria-hidden="true" className="w-5 h-5" />
                   </button>
                 )}
               </div>
@@ -190,12 +231,15 @@ export const Header: React.FC<HeaderProps> = ({
             {/* Mobile Menu Button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-menu"
+              aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
               className="md:hidden text-gray-700"
             >
               {mobileMenuOpen ? (
-                <X className="w-6 h-6" />
+                <X aria-hidden="true" className="w-6 h-6" />
               ) : (
-                <Menu className="w-6 h-6" />
+                <Menu aria-hidden="true" className="w-6 h-6" />
               )}
             </button>
           </div>
@@ -203,7 +247,7 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-gray-200 bg-white">
+        <div id="mobile-menu" className="md:hidden border-t border-gray-200 bg-white">
           <nav className="px-4 py-4 space-y-2">
             <Link
               to="/"

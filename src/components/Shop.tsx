@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { Star, Edit, Trash2 } from 'lucide-react'
 import { Header } from './Header'
 import {
@@ -176,16 +176,23 @@ export const Shop: React.FC<PageProps> = ({
     window.location.href = url
   }
 
-  const filteredProducts = products
-    .filter((p) => mainCategory === 'all' || p.mainCategory === mainCategory)
-    .filter(
-      (p) =>
-        searchQuery === '' ||
-        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.description.toLowerCase().includes(searchQuery.toLowerCase()),
-    )
+  const filteredProducts = useMemo(
+    () =>
+      products
+        .filter((p) => mainCategory === 'all' || p.mainCategory === mainCategory)
+        .filter(
+          (p) =>
+            searchQuery === '' ||
+            p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            p.description.toLowerCase().includes(searchQuery.toLowerCase()),
+        ),
+    [products, mainCategory, searchQuery],
+  )
 
-  const cartItemCount = cart.reduce((sum, item) => sum + item.quantity, 0)
+  const cartItemCount = useMemo(
+    () => cart.reduce((sum, item) => sum + item.quantity, 0),
+    [cart],
+  )
 
   // Check if user is admin
   const isAdmin = !!user?.email && ADMIN_EMAILS.includes(user.email)

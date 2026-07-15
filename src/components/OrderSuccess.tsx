@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
 import { doc, onSnapshot } from 'firebase/firestore'
 import { db } from '../firebase'
@@ -57,9 +57,9 @@ export const OrderSuccess: React.FC<PageProps> = ({
     return () => unsubscribe()
   }, [orderId, isAuthenticated])
 
-  const orderTotal = order?.items.reduce(
-    (sum, item) => sum + item.unitPrice * item.quantity,
-    0
+  const orderTotal = useMemo(
+    () => order?.items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0),
+    [order],
   )
 
   if (isLoading) {
