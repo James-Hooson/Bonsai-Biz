@@ -9,8 +9,6 @@ export interface PageProps {
   onLogout: () => void
 }
 
-export const AUTH0_ROLES_CLAIM = 'https://zenbonsai.com/roles'
-
 export const ADMIN_EMAILS = ['jmhooson48@gmail.com', 'zenoasisnz@gmail.com']
 
 export interface Product {

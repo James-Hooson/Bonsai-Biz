@@ -189,7 +189,7 @@ export const ProductModal: React.FC<{
                         try {
                           const storageRef = ref(
                             storage,
-                            `products/${Date.now()}_${file.name}`,
+                            `products/${crypto.randomUUID()}_${file.name}`,
                           )
                           await uploadBytes(storageRef, file)
                           const downloadURL = await getDownloadURL(storageRef)
