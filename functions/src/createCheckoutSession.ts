@@ -6,10 +6,17 @@ import { randomUUID } from 'node:crypto'
 
 const STRIPE_SECRET_KEY = defineSecret('STRIPE_SECRET_KEY')
 
-const ALLOWED_ORIGINS = [
-  process.env.BASE_URL || 'http://localhost:5173',
-  'http://localhost:5173',
-]
+const LOCALHOST_URL = 'http://localhost:5173'
+const BASE_URL = process.env.BASE_URL
+
+if (!BASE_URL) {
+  console.error(
+    'BASE_URL environment variable is not set — falling back to localhost only. ' +
+      'If this function is deployed without BASE_URL configured, checkout will be CORS-blocked from the live site.'
+  )
+}
+
+const ALLOWED_ORIGINS = BASE_URL ? [BASE_URL, LOCALHOST_URL] : [LOCALHOST_URL]
 
 interface CheckoutItem {
   productId: string
@@ -92,16 +99,15 @@ export const createCheckoutSession = onRequest(
         const productData = productDoc.data()!
         const availableStock: number = productData.stock ?? 0
         if (availableStock <= 0) {
-          res.status(400).json({ error: `${productData.name} is out of stock` })
+          console.error(`Checkout attempted for out-of-stock product ${item.productId}`)
+          res.status(400).json({ error: 'One or more items in your cart are unavailable' })
           return
         }
         if (availableStock < item.quantity) {
           console.error(
             `Checkout requested quantity ${item.quantity} for ${item.productId} but only ${availableStock} in stock`
           )
-          res.status(400).json({
-            error: `Not enough ${productData.name} in stock for the requested quantity`,
-          })
+          res.status(400).json({ error: 'One or more items in your cart are unavailable' })
           return
         }
 
@@ -166,7 +172,7 @@ export const createCheckoutSession = onRequest(
         return
       }
 
-      const baseUrl = process.env.BASE_URL || 'http://localhost:5173'
+      const baseUrl = BASE_URL || LOCALHOST_URL
 
       // Create Stripe Checkout Session
       const session = await stripe.checkout.sessions.create({

@@ -109,12 +109,20 @@ export const Header: React.FC<HeaderProps> = ({
                     Bonsai
                   </Link>
                   <Link
-                    to="/?category=houseplants"
+                    to="/?category=potted-plants"
                     role="menuitem"
                     className="block px-4 py-2 text-gray-700 hover:bg-green-50 hover:text-green-600"
                     onClick={() => setShopDropdownOpen(false)}
                   >
-                    House Plants
+                    Potted Plants
+                  </Link>
+                  <Link
+                    to="/?category=aquatic-plants"
+                    role="menuitem"
+                    className="block px-4 py-2 text-gray-700 hover:bg-green-50 hover:text-green-600"
+                    onClick={() => setShopDropdownOpen(false)}
+                  >
+                    Aquatic Plants
                   </Link>
                   <Link
                     to="/?category=tanks"

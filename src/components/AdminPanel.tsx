@@ -1,7 +1,9 @@
 import React from 'react'
 import { Plus, Package, Truck, RefreshCw } from 'lucide-react'
-import { collection, query, orderBy, onSnapshot } from 'firebase/firestore'
+import { collection, query, orderBy, limit, onSnapshot } from 'firebase/firestore'
 import { db } from '../firebase'
+
+const ORDERS_PAGE_SIZE = 25
 
 interface ShippingAddress {
   name: string | null
@@ -31,17 +33,20 @@ interface AdminPanelProps {
 export const AdminPanel: React.FC<AdminPanelProps> = ({ onAddProduct, ready }) => {
   const [orders, setOrders] = React.useState<Order[]>([])
   const [tab, setTab] = React.useState<'orders' | 'products'>('orders')
+  const [pageSize, setPageSize] = React.useState(ORDERS_PAGE_SIZE)
+  const [hasMore, setHasMore] = React.useState(false)
 
   React.useEffect(() => {
     if (!ready) return
-    const q = query(collection(db, 'orders'), orderBy('createdAt', 'desc'))
+    const q = query(collection(db, 'orders'), orderBy('createdAt', 'desc'), limit(pageSize))
     const unsub = onSnapshot(q, (snap) => {
       setOrders(
         snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<Order, 'id'>) }))
       )
+      setHasMore(snap.docs.length === pageSize)
     })
     return unsub
-  }, [ready])
+  }, [ready, pageSize])
 
   return (
     <div className="bg-blue-50 border-b border-blue-200">
@@ -171,6 +176,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onAddProduct, ready }) =
                   </div>
                 </div>
               ))
+            )}
+            {ready && hasMore && (
+              <button
+                onClick={() => setPageSize((n) => n + ORDERS_PAGE_SIZE)}
+                className="w-full text-center text-sm text-blue-700 hover:text-blue-900 py-2 font-medium"
+              >
+                Load more orders
+              </button>
             )}
           </div>
         )}

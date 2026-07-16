@@ -26,6 +26,7 @@ export const OrderSuccess: React.FC<PageProps> = ({
   user,
   isAuthenticated,
   isLoading,
+  firebaseReady,
   onLogout,
 }) => {
   const [searchParams] = useSearchParams()
@@ -37,7 +38,7 @@ export const OrderSuccess: React.FC<PageProps> = ({
   const loading = !!orderId && isAuthenticated && !order && !error
 
   useEffect(() => {
-    if (!orderId || !isAuthenticated) return
+    if (!orderId || !isAuthenticated || !firebaseReady) return
 
     const unsubscribe = onSnapshot(
       doc(db, 'orders', orderId),
@@ -55,7 +56,7 @@ export const OrderSuccess: React.FC<PageProps> = ({
     )
 
     return () => unsubscribe()
-  }, [orderId, isAuthenticated])
+  }, [orderId, isAuthenticated, firebaseReady])
 
   const orderTotal = useMemo(
     () => order?.items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0),

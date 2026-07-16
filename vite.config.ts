@@ -8,6 +8,10 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: './src/setupTests.ts',
+    // Scope to the frontend only — functions/ is a separate npm package with
+    // its own vitest config/environment; without this, vitest's default glob
+    // also picks up functions/src/*.test.ts from here.
+    include: ['src/**/*.{test,spec}.{ts,tsx}'],
   },
   build: {
     rollupOptions: {
