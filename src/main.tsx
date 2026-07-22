@@ -6,7 +6,9 @@ import './index.css'
 
 const rootElement = document.getElementById('root')
 if (!rootElement) {
-  throw new Error('Root element not found. Ensure index.html contains a <div id="root"></div>')
+  throw new Error(
+    'Root element not found. Ensure index.html contains a <div id="root"></div>',
+  )
 }
 
 ReactDOM.createRoot(rootElement).render(
@@ -24,3 +26,4 @@ ReactDOM.createRoot(rootElement).render(
     </Auth0Provider>
   </React.StrictMode>,
 )
+//test
