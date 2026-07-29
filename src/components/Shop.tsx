@@ -205,15 +205,15 @@ export const Shop: React.FC<PageProps> = ({
   // Auth Loading state, maybe change to add something fun liek as bonsai tree swaying
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-shore flex items-center justify-center">
         <div className="text-center">
-          <div className="text-xl text-gray-600">Loading...</div>
+          <div className="text-xl text-ink-soft">Loading...</div>
         </div>
       </div>
     )
   }
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-shore">
       {/* Header */}
       <Header
         user={isAuthenticated ? user : null}
@@ -231,13 +231,14 @@ export const Shop: React.FC<PageProps> = ({
       )}
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-green-50 to-emerald-50 py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="band-water py-16">
+        <div className="max-w-page mx-auto px-gutter">
           <div className="text-center">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+            <p className="eyebrow mb-3">Zen Oasis</p>
+            <h2 className="text-display font-bold text-ink-invert mb-4">
               Cultivate Tranquility
             </h2>
-            <p className="text-xl text-gray-600 mb-2">
+            <p className="text-lede text-ink-invert-soft mb-2">
               Premium bonsai trees for every skill level
             </p>
           </div>
@@ -245,8 +246,8 @@ export const Shop: React.FC<PageProps> = ({
       </section>
 
       {/* Category Filter */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <p className="text-sm text-gray-600 text-center mb-2">Filter by category:</p>
+      <div className="max-w-page mx-auto px-gutter py-8">
+        <p className="text-sm text-ink-soft text-center mb-2">Filter by category:</p>
         <div className="flex gap-4 overflow-x-auto pb-2 justify-center">
           {visibleCategories.map((cat) => (
             <button
@@ -254,8 +255,8 @@ export const Shop: React.FC<PageProps> = ({
               onClick={() => setMainCategory(cat.value)}
               className={`px-6 py-2 rounded-full whitespace-nowrap transition ${
                 mainCategory === cat.value
-                  ? 'bg-green-600 text-white'
-                  : 'bg-white text-gray-700 hover:bg-gray-100'
+                  ? 'bg-moss text-white'
+                  : 'bg-paper text-ink-soft hover:bg-shore-deep'
               }`}
             >
               {cat.label}
@@ -265,17 +266,17 @@ export const Shop: React.FC<PageProps> = ({
       </div>
 
       {/* Products Grid */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+      <main className="max-w-page mx-auto px-gutter pb-16">
         {loading ? (
           <div className="text-center py-16">
-            <div className="text-xl text-gray-600">Loading products...</div>
+            <div className="text-xl text-ink-soft">Loading products...</div>
           </div>
         ) : error ? (
           <div className="text-center py-16">
             <div className="text-xl text-red-600 mb-4">{error}</div>
             <button
               onClick={() => window.location.reload()}
-              className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition"
+              className="bg-moss text-white px-6 py-2 rounded-lg hover:bg-moss-deep transition"
             >
               Try Again
             </button>
@@ -285,7 +286,7 @@ export const Shop: React.FC<PageProps> = ({
           {filteredProducts.map((product) => (
             <div
               key={product.id}
-              className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition"
+              className="group bg-paper rounded-card border border-stone overflow-hidden transition duration-420 ease-water hover:-translate-y-0.5 hover:shadow-lift"
             >
               <div className="relative aspect-square">
                 <img
@@ -296,7 +297,7 @@ export const Shop: React.FC<PageProps> = ({
                   decoding="async"
                 />
                 {!product.inStock && (
-                  <div className="absolute bottom-0 left-0 right-0 bg-green-500/50 text-white text-center py-2">
+                  <div className="absolute bottom-0 left-0 right-0 bg-water/70 text-white text-center py-2">
                     <span className="text-sm font-semibold">Out of Stock</span>
                   </div>
                 )}
@@ -305,14 +306,14 @@ export const Shop: React.FC<PageProps> = ({
                     <button
                       onClick={() => setEditingProduct(product)}
                       disabled={!firebaseReady}
-                      className="bg-white p-2 rounded-full shadow hover:bg-gray-100 disabled:cursor-not-allowed"
+                      className="bg-paper p-2 rounded-full shadow hover:bg-shore-deep disabled:cursor-not-allowed"
                     >
                       <Edit className="w-4 h-4 text-blue-600" />
                     </button>
                     <button
                       onClick={() => handleDeleteProduct(product.id)}
                       disabled={!firebaseReady}
-                      className="bg-white p-2 rounded-full shadow hover:bg-gray-100 disabled:cursor-not-allowed"
+                      className="bg-paper p-2 rounded-full shadow hover:bg-shore-deep disabled:cursor-not-allowed"
                     >
                       <Trash2 className="w-4 h-4 text-red-600" />
                     </button>
@@ -321,30 +322,30 @@ export const Shop: React.FC<PageProps> = ({
               </div>
               <div className="p-4">
                 {' '}
-                <h3 className="font-semibold text-gray-900 mb-1 text-lg">
+                <h3 className="font-semibold text-ink mb-1 text-lg">
                   {' '}
                   {product.name}
                 </h3>
-                <p className="text-sm text-gray-600 mb-2">
+                <p className="text-sm text-ink-soft mb-2">
                   {' '}
                   {product.description}
                 </p>
                 <div className="flex items-center gap-1 mb-2">
                   <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />{' '}
-                  <span className="text-sm text-gray-600">
+                  <span className="text-sm text-ink-soft">
                     {' '}
                     {product.rating}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-2xl font-bold text-green-600">
+                  <span className="font-data text-2xl font-bold text-moss">
                     {' '}
                     ${product.price}
                   </span>
                   <button
                     onClick={() => addToCart(product)}
                     disabled={!product.inStock}
-                    className="bg-green-600 text-white px-5 py-2.5 rounded-lg hover:bg-green-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed text-base"
+                    className="bg-moss text-white px-5 py-2.5 rounded-lg hover:bg-moss-deep transition disabled:bg-stone disabled:cursor-not-allowed text-base"
                   >
                     Add to Cart
                   </button>

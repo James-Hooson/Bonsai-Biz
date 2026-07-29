@@ -50,7 +50,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onAddProduct, ready }) =
 
   return (
     <div className="bg-blue-50 border-b border-blue-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div className="max-w-page mx-auto px-gutter py-4">
         {/* Header row */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-4">
@@ -103,7 +103,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onAddProduct, ready }) =
               orders.map((order) => (
                 <div
                   key={order.id}
-                  className="bg-white rounded-lg border border-blue-100 p-4 shadow-sm"
+                  className="bg-paper rounded-lg border border-blue-100 p-4 shadow-sm"
                 >
                   <div className="flex items-start justify-between gap-4 flex-wrap">
                     <div>
@@ -111,24 +111,24 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onAddProduct, ready }) =
                         {order.deliveryMethod === 'delivery' ? (
                           <Truck className="w-4 h-4 text-blue-600 shrink-0" />
                         ) : (
-                          <Package className="w-4 h-4 text-gray-500 shrink-0" />
+                          <Package className="w-4 h-4 text-ink-soft shrink-0" />
                         )}
-                        <span className="font-semibold text-gray-900 text-sm capitalize">
+                        <span className="font-semibold text-ink text-sm capitalize">
                           {order.deliveryMethod ?? 'pickup'}
                         </span>
                         <span
                           className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                             order.status === 'completed'
-                              ? 'bg-green-100 text-green-700'
+                              ? 'bg-moss/10 text-moss-deep'
                               : order.status === 'expired'
-                              ? 'bg-gray-100 text-gray-500'
+                              ? 'bg-stone/60 text-ink-soft'
                               : 'bg-yellow-100 text-yellow-700'
                           }`}
                         >
                           {order.status}
                         </span>
                       </div>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-ink-soft">
                         {order.userEmail ?? 'Guest'}
                         {order.createdAt
                           ? ` · ${order.createdAt.toDate().toLocaleDateString('en-NZ', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}`
@@ -138,7 +138,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onAddProduct, ready }) =
 
                     {/* Delivery address */}
                     {order.deliveryMethod === 'delivery' && (
-                      <div className="text-sm text-gray-700 bg-blue-50 rounded p-2 min-w-45">
+                      <div className="text-sm text-ink-soft bg-blue-50 rounded p-2 min-w-45">
                         {order.shippingAddress ? (
                           <>
                             {order.shippingAddress.name && (
@@ -157,7 +157,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onAddProduct, ready }) =
                             </p>
                           </>
                         ) : (
-                          <span className="flex items-center gap-1 text-gray-400 text-xs">
+                          <span className="flex items-center gap-1 text-ink-soft text-xs">
                             <RefreshCw className="w-3 h-3" /> Awaiting payment
                           </span>
                         )}
@@ -166,9 +166,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onAddProduct, ready }) =
                   </div>
 
                   {/* Items */}
-                  <div className="mt-3 border-t pt-2 space-y-0.5">
+                  <div className="mt-3 border-t border-stone pt-2 space-y-0.5">
                     {order.items?.map((item, i) => (
-                      <div key={i} className="flex justify-between text-xs text-gray-600">
+                      <div key={i} className="flex justify-between text-xs text-ink-soft">
                         <span>{item.name} × {item.quantity}</span>
                         <span>${(item.unitPrice * item.quantity).toFixed(2)}</span>
                       </div>

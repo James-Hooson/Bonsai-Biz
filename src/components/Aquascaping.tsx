@@ -10,20 +10,21 @@ export const Aquascaping: React.FC<PageProps> = ({
   onLogout,
 }) => {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-shore">
       <Header
         user={isAuthenticated ? user : null}
         onLogout={onLogout}
       />
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-blue-50 to-cyan-50 py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="band-water py-16">
+        <div className="max-w-page mx-auto px-gutter">
           <div className="text-center">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+            <p className="eyebrow mb-3">Design · Build · Maintain</p>
+            <h2 className="text-display font-bold text-ink-invert mb-4">
               Aquascaping
             </h2>
-            <p className="text-xl text-gray-600">
+            <p className="text-lede text-ink-invert-soft">
               Beautiful underwater landscapes — designed, built, and maintained by us
             </p>
           </div>
@@ -34,12 +35,12 @@ export const Aquascaping: React.FC<PageProps> = ({
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
 
         {/* Intro */}
-        <div className="bg-white rounded-lg shadow-sm p-8 mb-8">
+        <div className="bg-paper rounded-lg shadow-sm p-8 mb-8">
           <div className="max-w-3xl mx-auto text-center">
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">
+            <h3 className="text-2xl font-bold text-ink mb-4">
               Bring Your Tank to Life
             </h3>
-            <p className="text-lg text-gray-700 leading-relaxed">
+            <p className="text-lg text-ink-soft leading-relaxed">
               Aquascaping is the art of arranging aquatic plants, rocks, and driftwood
               into a stunning underwater garden. Whether you're starting fresh or looking
               to transform an existing tank, we offer everything from full setup and design
@@ -51,42 +52,42 @@ export const Aquascaping: React.FC<PageProps> = ({
         {/* Services Grid */}
         <div className="grid md:grid-cols-3 gap-8 mb-12">
           {/* Tank Setup */}
-          <div className="bg-white rounded-lg shadow-sm p-6 text-center hover:shadow-md transition">
+          <div className="bg-paper rounded-lg shadow-sm p-6 text-center hover:shadow-lift transition">
             <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
               <Waves className="w-8 h-8 text-blue-600" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-3">
+            <h3 className="text-xl font-semibold text-ink mb-3">
               Tank Setup
             </h3>
-            <p className="text-gray-700">
+            <p className="text-ink-soft">
               Full tank builds from scratch — we handle substrate, hardscape, planting,
               lighting, and filtration to create a thriving aquascape tailored to your vision.
             </p>
           </div>
 
           {/* Servicing */}
-          <div className="bg-white rounded-lg shadow-sm p-6 text-center hover:shadow-md transition">
+          <div className="bg-paper rounded-lg shadow-sm p-6 text-center hover:shadow-lift transition">
             <div className="bg-teal-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
               <Wrench className="w-8 h-8 text-teal-600" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-3">
+            <h3 className="text-xl font-semibold text-ink mb-3">
               Servicing
             </h3>
-            <p className="text-gray-700">
+            <p className="text-ink-soft">
               Regular maintenance visits to keep your tank in peak condition — water changes,
               plant trimming, filter cleans, and water parameter checks.
             </p>
           </div>
 
           {/* Consultation */}
-          <div className="bg-white rounded-lg shadow-sm p-6 text-center hover:shadow-md transition">
+          <div className="bg-paper rounded-lg shadow-sm p-6 text-center hover:shadow-lift transition">
             <div className="bg-cyan-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
               <MessageCircle className="w-8 h-8 text-cyan-600" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-3">
+            <h3 className="text-xl font-semibold text-ink mb-3">
               Consultation
             </h3>
-            <p className="text-gray-700">
+            <p className="text-ink-soft">
               Not sure where to start? Our experts can advise on tank size, livestock
               compatibility, plant selection, CO₂ systems, and more — in person or online.
             </p>
@@ -94,10 +95,10 @@ export const Aquascaping: React.FC<PageProps> = ({
         </div>
 
         {/* Feature Section */}
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-8">
+        <div className="bg-paper rounded-lg shadow-sm overflow-hidden mb-8">
           <div className="grid md:grid-cols-2 gap-8">
             <div className="p-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">
+              <h3 className="text-2xl font-bold text-ink mb-4">
                 What We Offer
               </h3>
               <ul className="space-y-4">
@@ -106,8 +107,8 @@ export const Aquascaping: React.FC<PageProps> = ({
                     <Fish className="w-4 h-4 text-blue-600" />
                   </div>
                   <div>
-                    <p className="font-semibold text-gray-900">Planted & Nature-Style Tanks</p>
-                    <p className="text-gray-600 text-sm">Dutch, Iwagumi, jungle — any style designed to your taste.</p>
+                    <p className="font-semibold text-ink">Planted & Nature-Style Tanks</p>
+                    <p className="text-ink-soft text-sm">Dutch, Iwagumi, jungle — any style designed to your taste.</p>
                   </div>
                 </li>
                 <li className="flex items-start gap-3">
@@ -115,8 +116,8 @@ export const Aquascaping: React.FC<PageProps> = ({
                     <Leaf className="w-4 h-4 text-teal-600" />
                   </div>
                   <div>
-                    <p className="font-semibold text-gray-900">Live Plant Selection</p>
-                    <p className="text-gray-600 text-sm">Foreground carpets, midground accents, and background stems sourced fresh.</p>
+                    <p className="font-semibold text-ink">Live Plant Selection</p>
+                    <p className="text-ink-soft text-sm">Foreground carpets, midground accents, and background stems sourced fresh.</p>
                   </div>
                 </li>
                 <li className="flex items-start gap-3">
@@ -124,8 +125,8 @@ export const Aquascaping: React.FC<PageProps> = ({
                     <Droplets className="w-4 h-4 text-cyan-600" />
                   </div>
                   <div>
-                    <p className="font-semibold text-gray-900">Water Chemistry Support</p>
-                    <p className="text-gray-600 text-sm">CO₂ injection, fertilisation schedules, and parameter balancing.</p>
+                    <p className="font-semibold text-ink">Water Chemistry Support</p>
+                    <p className="text-ink-soft text-sm">CO₂ injection, fertilisation schedules, and parameter balancing.</p>
                   </div>
                 </li>
                 <li className="flex items-start gap-3">
@@ -133,8 +134,8 @@ export const Aquascaping: React.FC<PageProps> = ({
                     <Wrench className="w-4 h-4 text-blue-600" />
                   </div>
                   <div>
-                    <p className="font-semibold text-gray-900">Ongoing Maintenance Plans</p>
-                    <p className="text-gray-600 text-sm">Weekly or fortnightly visits so your tank always looks its best.</p>
+                    <p className="font-semibold text-ink">Ongoing Maintenance Plans</p>
+                    <p className="text-ink-soft text-sm">Weekly or fortnightly visits so your tank always looks its best.</p>
                   </div>
                 </li>
               </ul>
@@ -152,29 +153,29 @@ export const Aquascaping: React.FC<PageProps> = ({
         </div>
 
         {/* Stats Banner */}
-        <div className="bg-gradient-to-r from-blue-600 to-cyan-600 rounded-lg shadow-lg p-8 text-white mb-8">
+        <div className="band-water rounded-lg shadow-lift p-8 mb-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <div>
               <div className="text-4xl font-bold mb-2">50+</div>
-              <div className="text-blue-100">Tanks Built</div>
+              <div className="text-caustic">Tanks Built</div>
             </div>
             <div>
               <div className="text-4xl font-bold mb-2">100%</div>
-              <div className="text-blue-100">Custom Designs</div>
+              <div className="text-caustic">Custom Designs</div>
             </div>
             <div>
               <div className="text-4xl font-bold mb-2">NZ-Wide</div>
-              <div className="text-blue-100">Service Area</div>
+              <div className="text-caustic">Service Area</div>
             </div>
             <div>
               <div className="text-4xl font-bold mb-2">Free</div>
-              <div className="text-blue-100">Initial Consult</div>
+              <div className="text-caustic">Initial Consult</div>
             </div>
           </div>
         </div>
 
         {/* Tip Box */}
-        <div className="bg-white rounded-lg shadow-sm p-8 mb-8">
+        <div className="bg-paper rounded-lg shadow-sm p-8 mb-8">
           <div className="bg-blue-50 border-l-4 border-blue-600 p-4">
             <p className="text-blue-800 font-medium">
               Pro Tip: The key to a thriving aquascape is balancing light, CO₂, and nutrients.
@@ -185,10 +186,10 @@ export const Aquascaping: React.FC<PageProps> = ({
 
         {/* CTA */}
         <div className="text-center">
-          <h3 className="text-2xl font-bold text-gray-900 mb-4">
+          <h3 className="text-2xl font-bold text-ink mb-4">
             Ready to create your perfect aquascape?
           </h3>
-          <p className="text-gray-700 mb-6">
+          <p className="text-ink-soft mb-6">
             Reach out for a free consultation and let's design something beautiful.
           </p>
           <Link

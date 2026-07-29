@@ -1,1 +1,106 @@
-@import 'tailwindcss';
+/* ============================================================
+   BLACKWATER — Tailwind v4 theme
+   Fonts: Fraunces, Archivo, IBM Plex Mono loaded via index.html.
+   ============================================================ */
+
+@import "tailwindcss";
+
+@theme {
+  /* --- Colour -------------------------------------------- */
+  --color-shore:        #E9E4DA;
+  --color-shore-deep:   #DAD3C7;
+  --color-stone:        #C4BCB9;
+  --color-paper:        #F7F4EE;
+
+  --color-water:        #0E1A17;
+  --color-water-lift:   #16241F;
+  --color-tannin:       #3A2E22;
+
+  --color-ink:          #17211D;
+  --color-ink-soft:     #5A635C;
+  --color-ink-invert:   #EFEBE2;
+  --color-ink-invert-soft: #A6B0A6;
+
+  --color-moss:         #4E7A52;
+  --color-moss-deep:    #3A5C3E;
+  --color-caustic:      #A8D5C8;
+  --color-amber:        #B4762F;
+
+  /* --- Type ---------------------------------------------- */
+  --font-display: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --font-body:    "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --font-data:    "IBM Plex Mono", ui-monospace, "SF Mono", monospace;
+
+  /* Fluid display sizes. Tailwind's own text-sm…text-xl stay as
+     they are — these are the extra rungs the design needs. */
+  --text-display:    clamp(2.6rem, 4vw + 1.2rem, 4.5rem);
+  --text-display--line-height: 1.05;
+  --text-display--letter-spacing: -0.02em;
+
+  --text-headline:   clamp(1.9rem, 2vw + 1.2rem, 2.6rem);
+  --text-headline--line-height: 1.1;
+  --text-headline--letter-spacing: -0.015em;
+
+  --text-title:      clamp(1.4rem, 1vw + 1.1rem, 1.75rem);
+  --text-title--line-height: 1.2;
+
+  --text-lede:       clamp(1.125rem, 0.5vw + 1rem, 1.25rem);
+  --text-lede--line-height: 1.55;
+
+  /* --- Form ---------------------------------------------- */
+  --radius-card: 4px;
+  --radius-chip: 2px;
+
+  --shadow-lift: 0 8px 24px -12px rgb(23 33 29 / 0.28);
+
+  --ease-water: cubic-bezier(0.2, 0.7, 0.3, 1);
+
+  /* Page container. Use with `mx-auto w-page px-gutter`. */
+  --spacing-gutter: clamp(1rem, 4vw, 3rem);
+  --width-page: 1240px;
+}
+
+/* --- Base ------------------------------------------------- */
+
+@layer base {
+  body {
+    @apply bg-shore text-ink font-body antialiased;
+  }
+  h1, h2, h3, h4 {
+    @apply font-display font-medium text-balance;
+    font-variation-settings: "SOFT" 0, "WONK" 1, "opsz" 40;
+  }
+  p { @apply text-pretty; }
+  :focus-visible { @apply outline-2 outline-offset-[3px] outline-moss; }
+}
+
+/* --- Components ------------------------------------------- */
+/* Only the patterns that carry real design decisions live here.
+   Everything else composes from utilities at the call site. */
+
+@layer components {
+
+  /* The signature. A dark band reads as being below the surface:
+     caustic hairline on top, light falling through. */
+  .band-water {
+    @apply relative isolate bg-water text-ink-invert;
+  }
+  .band-water::before {
+    content: "";
+    @apply absolute inset-x-0 top-0 h-px opacity-50;
+    background: linear-gradient(90deg,
+      transparent, var(--color-caustic) 15%, var(--color-caustic) 85%, transparent);
+  }
+  .band-water::after {
+    content: "";
+    @apply absolute inset-0 -z-10 pointer-events-none;
+    background: radial-gradient(120% 60% at 50% 0%,
+      rgb(168 213 200 / 0.14), transparent 70%);
+  }
+
+  /* Specimen label, not marketing garnish. */
+  .eyebrow {
+    @apply font-data text-xs uppercase tracking-[0.14em] text-ink-soft;
+  }
+  .band-water .eyebrow { @apply text-caustic; }
+}

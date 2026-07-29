@@ -44,12 +44,12 @@ export const Header: React.FC<HeaderProps> = ({
     }
   }
   return (
-    <header className="bg-white shadow-sm sticky top-0 z-40">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-40 border-b border-stone bg-shore/90 backdrop-blur-md">
+      <div className="max-w-page mx-auto px-gutter">
         <div className="flex justify-between items-center h-16">
           <Link to="/" className="flex items-center gap-2">
-            <Leaf className="w-8 h-8 text-green-600" />
-            <h1 className="text-2xl font-bold text-gray-900">Zen Oasis</h1>
+            <Leaf className="w-8 h-8 text-moss" />
+            <h1 className="text-2xl font-bold text-ink tracking-tight">Zen Oasis</h1>
           </Link>
 
           <nav className="hidden md:flex items-center gap-6">
@@ -64,7 +64,7 @@ export const Header: React.FC<HeaderProps> = ({
               }}
             >
               <div className="flex items-center gap-1">
-                <Link to="/" className="text-gray-700 hover:text-green-600">
+                <Link to="/" className="border-b-2 border-transparent py-2 text-ink-soft transition-colors hover:border-moss hover:text-moss">
                   Shop
                 </Link>
                 <button
@@ -75,7 +75,7 @@ export const Header: React.FC<HeaderProps> = ({
                   aria-label="Toggle shop categories"
                   onClick={() => setShopDropdownOpen((prev) => !prev)}
                   onFocus={() => setShopDropdownOpen(true)}
-                  className="text-gray-700 hover:text-green-600"
+                  className="text-ink-soft hover:text-moss"
                 >
                   <svg
                     aria-hidden="true"
@@ -98,12 +98,12 @@ export const Header: React.FC<HeaderProps> = ({
                 <div
                   id="shop-dropdown-menu"
                   role="menu"
-                  className="absolute top-full left-0 w-48 bg-white shadow-lg rounded-lg pt-1 pb-2 z-50"
+                  className="absolute top-full left-0 w-48 bg-paper shadow-lift rounded-lg pt-1 pb-2 z-50"
                 >
                   <Link
                     to="/?category=bonsai"
                     role="menuitem"
-                    className="block px-4 py-2 text-gray-700 hover:bg-green-50 hover:text-green-600"
+                    className="block px-4 py-2 text-ink-soft hover:bg-shore-deep hover:text-moss"
                     onClick={() => setShopDropdownOpen(false)}
                   >
                     Bonsai
@@ -111,7 +111,7 @@ export const Header: React.FC<HeaderProps> = ({
                   <Link
                     to="/?category=potted-plants"
                     role="menuitem"
-                    className="block px-4 py-2 text-gray-700 hover:bg-green-50 hover:text-green-600"
+                    className="block px-4 py-2 text-ink-soft hover:bg-shore-deep hover:text-moss"
                     onClick={() => setShopDropdownOpen(false)}
                   >
                     Potted Plants
@@ -119,7 +119,7 @@ export const Header: React.FC<HeaderProps> = ({
                   <Link
                     to="/?category=aquatic-plants"
                     role="menuitem"
-                    className="block px-4 py-2 text-gray-700 hover:bg-green-50 hover:text-green-600"
+                    className="block px-4 py-2 text-ink-soft hover:bg-shore-deep hover:text-moss"
                     onClick={() => setShopDropdownOpen(false)}
                   >
                     Aquatic Plants
@@ -127,16 +127,16 @@ export const Header: React.FC<HeaderProps> = ({
                   <Link
                     to="/?category=tanks"
                     role="menuitem"
-                    className="block px-4 py-2 text-gray-700 hover:bg-green-50 hover:text-green-600"
+                    className="block px-4 py-2 text-ink-soft hover:bg-shore-deep hover:text-moss"
                     onClick={() => setShopDropdownOpen(false)}
                   >
                     Tanks
                   </Link>
-                  <div className="border-t border-gray-200 my-1"></div>
+                  <div className="border-t border-stone my-1"></div>
                   <Link
                     to="/"
                     role="menuitem"
-                    className="block px-4 py-2 text-gray-700 hover:bg-green-50 hover:text-green-600"
+                    className="block px-4 py-2 text-ink-soft hover:bg-shore-deep hover:text-moss"
                     onClick={() => setShopDropdownOpen(false)}
                   >
                     All Products
@@ -144,22 +144,22 @@ export const Header: React.FC<HeaderProps> = ({
                 </div>
               )}
             </div>
-            <Link to="/about" className="text-gray-700 hover:text-green-600">
+            <Link to="/about" className="border-b-2 border-transparent py-2 text-ink-soft transition-colors hover:border-moss hover:text-moss">
               About
             </Link>
             <Link
               to="/care-guide"
-              className="text-gray-700 hover:text-green-600"
+              className="border-b-2 border-transparent py-2 text-ink-soft transition-colors hover:border-moss hover:text-moss"
             >
               Care Guide
             </Link>
             <Link
               to="/aquascaping"
-              className="text-gray-700 hover:text-green-600"
+              className="border-b-2 border-transparent py-2 text-ink-soft transition-colors hover:border-moss hover:text-moss"
             >
               Aquascaping
             </Link>
-            <Link to="/contact" className="text-gray-700 hover:text-green-600">
+            <Link to="/contact" className="border-b-2 border-transparent py-2 text-ink-soft transition-colors hover:border-moss hover:text-moss">
               Contact
             </Link>
           </nav>
@@ -175,7 +175,7 @@ export const Header: React.FC<HeaderProps> = ({
                   autoComplete="off"
                   value={searchQuery}
                   onChange={(e) => onSearchChange?.(e.target.value)}
-                  className="border border-gray-300 rounded-lg px-4 py-2 w-64 focus:ring-2 focus:ring-green-600 focus:border-transparent"
+                  className="border border-stone rounded-lg px-4 py-2 w-64 focus:ring-2 focus:ring-moss focus:border-transparent"
                   autoFocus
                 />
               )}
@@ -184,7 +184,7 @@ export const Header: React.FC<HeaderProps> = ({
                   onClick={onSearchClick}
                   aria-expanded={searchOpen}
                   aria-label={searchOpen ? 'Close search' : 'Open search'}
-                  className="text-gray-700 hover:text-green-600"
+                  className="text-ink-soft hover:text-moss"
                 >
                   <Search aria-hidden="true" className="w-6 h-6" />
                 </button>
@@ -196,11 +196,11 @@ export const Header: React.FC<HeaderProps> = ({
               <button
                 onClick={onCartOpen}
                 aria-label={`Open cart${cartItemCount > 0 ? ` (${cartItemCount} item${cartItemCount === 1 ? '' : 's'})` : ''}`}
-                className="relative text-gray-700 hover:text-green-600"
+                className="relative text-ink-soft hover:text-moss"
               >
                 <ShoppingCart aria-hidden="true" className="w-6 h-6" />
                 {cartItemCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-green-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  <span className="absolute -top-2 -right-2 bg-moss text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                     {cartItemCount}
                   </span>
                 )}
@@ -208,7 +208,7 @@ export const Header: React.FC<HeaderProps> = ({
             )}
 
             {!onCartOpen && (
-              <Link to="/" aria-label="Go to shop" className="text-gray-700 hover:text-green-600">
+              <Link to="/" aria-label="Go to shop" className="text-ink-soft hover:text-moss">
                 <ShoppingCart aria-hidden="true" className="w-6 h-6" />
               </Link>
             )}
@@ -219,7 +219,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <Link
                   to="/"
                   aria-label="Admin"
-                  className="text-gray-700 hover:text-green-600 flex items-center gap-1"
+                  className="text-ink-soft hover:text-moss flex items-center gap-1"
                 >
                   <UserIcon aria-hidden="true" className="w-5 h-5" />
                   <span className="hidden sm:inline" aria-hidden="true">Admin</span>
@@ -228,7 +228,7 @@ export const Header: React.FC<HeaderProps> = ({
                   <button
                     onClick={onLogout}
                     aria-label="Log out"
-                    className="text-gray-700 hover:text-green-600"
+                    className="text-ink-soft hover:text-moss"
                   >
                     <LogOut aria-hidden="true" className="w-5 h-5" />
                   </button>
@@ -242,7 +242,7 @@ export const Header: React.FC<HeaderProps> = ({
               aria-expanded={mobileMenuOpen}
               aria-controls="mobile-menu"
               aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
-              className="md:hidden text-gray-700"
+              className="md:hidden text-ink-soft"
             >
               {mobileMenuOpen ? (
                 <X aria-hidden="true" className="w-6 h-6" />
@@ -255,35 +255,35 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       {mobileMenuOpen && (
-        <div id="mobile-menu" className="md:hidden border-t border-gray-200 bg-white">
+        <div id="mobile-menu" className="md:hidden border-t border-stone bg-paper">
           <nav className="px-4 py-4 space-y-2">
             <Link
               to="/"
-              className="block text-gray-700 hover:text-green-600 py-2"
+              className="block text-ink-soft hover:text-moss py-2"
             >
               Shop
             </Link>
             <Link
               to="/about"
-              className="block text-gray-700 hover:text-green-600 py-2"
+              className="block text-ink-soft hover:text-moss py-2"
             >
               About
             </Link>
             <Link
               to="/care-guide"
-              className="block text-gray-700 hover:text-green-600 py-2"
+              className="block text-ink-soft hover:text-moss py-2"
             >
               Care Guide
             </Link>
             <Link
               to="/aquascaping"
-              className="block text-gray-700 hover:text-green-600 py-2"
+              className="block text-ink-soft hover:text-moss py-2"
             >
               Aquascaping
             </Link>
             <Link
               to="/contact"
-              className="block text-gray-700 hover:text-green-600 py-2"
+              className="block text-ink-soft hover:text-moss py-2"
             >
               Contact
             </Link>

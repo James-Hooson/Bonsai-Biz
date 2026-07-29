@@ -48,12 +48,12 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
   return (
     <>
       <div
-        className="fixed inset-0 backdrop-blur-sm bg-white/30 z-40"
+        className="fixed inset-0 backdrop-blur-sm bg-water/30 z-40"
         onClick={onClose}
       />
-      <div className="fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-xl z-50 flex flex-col">
-        <div className="flex items-center justify-between p-6 border-b">
-          <h2 className="text-2xl font-bold">Shopping Cart</h2>
+      <div className="fixed right-0 top-0 h-full w-full max-w-md bg-paper shadow-lift z-50 flex flex-col">
+        <div className="flex items-center justify-between p-6 border-b border-stone">
+          <h2 className="text-2xl font-bold text-ink">Shopping Cart</h2>
           <button onClick={onClose}>
             <X className="w-6 h-6" />
           </button>
@@ -61,13 +61,13 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
 
         <div className="flex-1 overflow-y-auto p-6">
           {cart.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">
+            <p className="text-ink-soft text-center py-8">
               Your cart is empty
             </p>
           ) : (
             <div className="space-y-4">
               {cart.map((item) => (
-                <div key={item.id} className="flex gap-4 border-b pb-4">
+                <div key={item.id} className="flex gap-4 border-b border-stone pb-4">
                   <img
                     src={item.image}
                     alt={item.name}
@@ -76,8 +76,8 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
                     decoding="async"
                   />
                   <div className="flex-1">
-                    <h3 className="font-semibold">{item.name}</h3>
-                    <p className="text-green-600 font-bold">
+                    <h3 className="font-semibold text-ink">{item.name}</h3>
+                    <p className="text-moss font-bold">
                       ${item.price}
                     </p>
                     <div className="flex items-center gap-2 mt-2">
@@ -85,7 +85,7 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
                         onClick={() =>
                           onUpdateQuantity(item.id, item.quantity - 1)
                         }
-                        className="w-8 h-8 border rounded hover:bg-gray-100"
+                        className="w-8 h-8 border border-stone rounded hover:bg-shore-deep"
                       >
                         -
                       </button>
@@ -96,7 +96,7 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
                         onClick={() =>
                           onUpdateQuantity(item.id, item.quantity + 1)
                         }
-                        className="w-8 h-8 border rounded hover:bg-gray-100"
+                        className="w-8 h-8 border border-stone rounded hover:bg-shore-deep"
                       >
                         +
                       </button>
@@ -115,17 +115,17 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
         </div>
 
         {cart.length > 0 && (
-          <div className="border-t p-6 space-y-4">
+          <div className="border-t border-stone p-6 space-y-4">
             {/* Pickup / Delivery toggle */}
             <div>
-              <p className="text-sm font-medium text-gray-700 mb-2">Fulfilment</p>
+              <p className="text-sm font-medium text-ink-soft mb-2">Fulfilment</p>
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => setDeliveryMethod('pickup')}
                   className={`flex items-center justify-center gap-2 py-2 px-3 rounded-lg border text-sm font-medium transition ${
                     deliveryMethod === 'pickup'
-                      ? 'bg-green-600 text-white border-green-600'
-                      : 'bg-white text-gray-700 border-gray-300 hover:border-green-400'
+                      ? 'bg-moss text-white border-moss'
+                      : 'bg-paper text-ink-soft border-stone hover:border-moss'
                   }`}
                 >
                   <Package className="w-4 h-4" />
@@ -135,8 +135,8 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
                   onClick={() => setDeliveryMethod('delivery')}
                   className={`flex items-center justify-center gap-2 py-2 px-3 rounded-lg border text-sm font-medium transition ${
                     deliveryMethod === 'delivery'
-                      ? 'bg-green-600 text-white border-green-600'
-                      : 'bg-white text-gray-700 border-gray-300 hover:border-green-400'
+                      ? 'bg-moss text-white border-moss'
+                      : 'bg-paper text-ink-soft border-stone hover:border-moss'
                   }`}
                 >
                   <Truck className="w-4 h-4" />
@@ -144,12 +144,12 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
                 </button>
               </div>
               {deliveryMethod === 'delivery' && (
-                <p className="text-xs text-gray-500 mt-1">Flat rate delivery within NZ</p>
+                <p className="text-xs text-ink-soft mt-1">Flat rate delivery within NZ</p>
               )}
             </div>
 
             {/* Cost breakdown */}
-            <div className="space-y-1 text-sm text-gray-700">
+            <div className="space-y-1 text-sm text-ink-soft">
               <div className="flex justify-between">
                 <span>Subtotal</span>
                 <span>${subtotal.toFixed(2)}</span>
@@ -162,9 +162,9 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
               )}
             </div>
 
-            <div className="flex justify-between text-xl font-bold border-t pt-3">
+            <div className="flex justify-between text-xl font-bold border-t border-stone pt-3">
               <span>Total:</span>
-              <span className="text-green-600">${cartTotal.toFixed(2)}</span>
+              <span className="text-moss">${cartTotal.toFixed(2)}</span>
             </div>
 
             {error && (
@@ -175,7 +175,7 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
             <button
               onClick={handleCheckoutClick}
               disabled={isCheckingOut}
-              className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+              className="w-full bg-moss text-white py-3 rounded-lg hover:bg-moss-deep transition disabled:bg-stone disabled:cursor-not-allowed"
             >
               {isCheckingOut ? 'Processing...' : 'Proceed to Checkout'}
             </button>

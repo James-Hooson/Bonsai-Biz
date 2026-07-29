@@ -45,9 +45,9 @@ export const ProductModal: React.FC<{
         onClick={onClose}
       />
       <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-          <div className="p-6 border-b flex items-center justify-between">
-            <h2 className="text-2xl font-bold">
+        <div className="bg-paper rounded-lg shadow-lift max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="p-6 border-b border-stone flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-ink">
               {product ? 'Edit Product' : 'Add New Product'}
             </h2>
             <button onClick={onClose}>
@@ -57,7 +57,7 @@ export const ProductModal: React.FC<{
 
           <div className="p-6 space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-2">
+              <label className="block text-sm font-medium mb-2 text-ink">
                 Product Name
               </label>
               <input
@@ -66,13 +66,13 @@ export const ProductModal: React.FC<{
                 onChange={(e) =>
                   setFormData({ ...formData, name: e.target.value })
                 }
-                className="w-full border rounded-lg px-4 py-2"
+                className="w-full border border-stone rounded-lg px-4 py-2 focus:ring-2 focus:ring-moss focus:border-transparent"
                 placeholder="Enter product name"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">
+              <label className="block text-sm font-medium mb-2 text-ink">
                 Category
               </label>
               <select
@@ -80,7 +80,7 @@ export const ProductModal: React.FC<{
                 onChange={(e) =>
                   setFormData({ ...formData, mainCategory: e.target.value })
                 }
-                className="w-full border rounded-lg px-4 py-2"
+                className="w-full border border-stone rounded-lg px-4 py-2 focus:ring-2 focus:ring-moss focus:border-transparent"
               >
                 <option value="bonsai">Bonsai Trees</option>
                 <option value="potted-plants">Potted Plants</option>
@@ -90,7 +90,7 @@ export const ProductModal: React.FC<{
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">
+              <label className="block text-sm font-medium mb-2 text-ink">
                 Description
               </label>
               <textarea
@@ -98,7 +98,7 @@ export const ProductModal: React.FC<{
                 onChange={(e) =>
                   setFormData({ ...formData, description: e.target.value })
                 }
-                className="w-full border rounded-lg px-4 py-2"
+                className="w-full border border-stone rounded-lg px-4 py-2 focus:ring-2 focus:ring-moss focus:border-transparent"
                 rows={3}
                 placeholder="Enter product description"
               />
@@ -106,7 +106,7 @@ export const ProductModal: React.FC<{
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-sm font-medium mb-2 text-ink">
                   Price ($)
                 </label>
                 <input
@@ -119,13 +119,13 @@ export const ProductModal: React.FC<{
                       price: parseFloat(e.target.value) || 0,
                     })
                   }
-                  className="w-full border rounded-lg px-4 py-2"
+                  className="w-full border border-stone rounded-lg px-4 py-2 focus:ring-2 focus:ring-moss focus:border-transparent"
                   placeholder="0.00"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Rating</label>
+                <label className="block text-sm font-medium mb-2 text-ink">Rating</label>
                 <input
                   type="number"
                   step="0.1"
@@ -138,13 +138,13 @@ export const ProductModal: React.FC<{
                       rating: parseFloat(e.target.value),
                     })
                   }
-                  className="w-full border rounded-lg px-4 py-2"
+                  className="w-full border border-stone rounded-lg px-4 py-2 focus:ring-2 focus:ring-moss focus:border-transparent"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">
+              <label className="block text-sm font-medium mb-2 text-ink">
                 Stock Count
               </label>
               <input
@@ -156,12 +156,12 @@ export const ProductModal: React.FC<{
                   const stock = Math.max(0, parseInt(e.target.value) || 0)
                   setFormData({ ...formData, stock, inStock: stock > 0 })
                 }}
-                className="w-full border rounded-lg px-4 py-2"
+                className="w-full border border-stone rounded-lg px-4 py-2 focus:ring-2 focus:ring-moss focus:border-transparent"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">
+              <label className="block text-sm font-medium mb-2 text-ink">
                 Product Image
               </label>
               <div className="space-y-2">
@@ -207,12 +207,12 @@ export const ProductModal: React.FC<{
                   />
                   <label
                     htmlFor="image-upload"
-                    className="flex items-center gap-2 bg-gray-100 px-4 py-2 rounded-lg cursor-pointer hover:bg-gray-200"
+                    className="flex items-center gap-2 bg-shore-deep text-ink px-4 py-2 rounded-lg cursor-pointer hover:bg-stone"
                   >
                     <Upload className="w-4 h-4" />
                     {uploading ? 'Uploading...' : 'Upload Image'}
                   </label>
-                  <span className="text-sm text-gray-500 text-center">or</span>
+                  <span className="text-sm text-ink-soft text-center">or</span>
                   <input
                     type="url"
                     placeholder="Enter image URL"
@@ -220,7 +220,7 @@ export const ProductModal: React.FC<{
                     onChange={(e) =>
                       setFormData({ ...formData, image: e.target.value })
                     }
-                    className="w-full border rounded-lg px-4 py-2"
+                    className="w-full border border-stone rounded-lg px-4 py-2 focus:ring-2 focus:ring-moss focus:border-transparent"
                     disabled={uploading}
                   />
                 </div>
@@ -231,14 +231,14 @@ export const ProductModal: React.FC<{
               <button
                 onClick={handleSubmit}
                 disabled={uploading}
-                className="flex-1 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                className="flex-1 bg-moss text-white py-3 rounded-lg hover:bg-moss-deep flex items-center justify-center gap-2 disabled:bg-stone disabled:cursor-not-allowed"
               >
                 <Save className="w-4 h-4" />
                 {uploading ? 'Uploading Image...' : 'Save Product'}
               </button>
               <button
                 onClick={onClose}
-                className="px-6 bg-gray-200 text-gray-700 py-3 rounded-lg hover:bg-gray-300"
+                className="px-6 bg-shore-deep text-ink-soft py-3 rounded-lg hover:bg-stone"
               >
                 Cancel
               </button>

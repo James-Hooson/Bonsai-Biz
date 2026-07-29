@@ -65,16 +65,16 @@ export const OrderSuccess: React.FC<PageProps> = ({
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-shore flex items-center justify-center">
         <div className="text-center">
-          <div className="text-xl text-gray-600">Loading...</div>
+          <div className="text-xl text-ink-soft">Loading...</div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-shore">
       <Header
         user={isAuthenticated ? user : null}
         onLogout={onLogout}
@@ -89,79 +89,79 @@ export const OrderSuccess: React.FC<PageProps> = ({
       <main className="max-w-2xl mx-auto px-4 py-16">
         {loading ? (
           <div className="text-center">
-            <Loader2 className="w-12 h-12 animate-spin text-green-600 mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-gray-900">
+            <Loader2 className="w-12 h-12 animate-spin text-moss mx-auto mb-4" />
+            <h1 className="text-2xl font-bold text-ink">
               Loading order...
             </h1>
           </div>
         ) : error ? (
           <div className="text-center">
             <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Error</h1>
-            <p className="text-gray-600 mb-8">{error}</p>
+            <h1 className="text-2xl font-bold text-ink mb-2">Error</h1>
+            <p className="text-ink-soft mb-8">{error}</p>
             <Link
               to="/"
-              className="inline-block bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition"
+              className="inline-block bg-moss text-white px-6 py-3 rounded-lg hover:bg-moss-deep transition"
             >
               Return to Shop
             </Link>
           </div>
         ) : !isAuthenticated ? (
-          <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-            <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          <div className="bg-paper rounded-lg shadow-sm p-8 text-center">
+            <CheckCircle className="w-16 h-16 text-moss mx-auto mb-4" />
+            <h1 className="text-3xl font-bold text-ink mb-2">
               Order Confirmed!
             </h1>
-            <p className="text-gray-600 mb-8">
+            <p className="text-ink-soft mb-8">
               Thank you for your purchase. A confirmation has been sent to your email.
             </p>
             <Link
               to="/"
-              className="inline-block bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition"
+              className="inline-block bg-moss text-white px-6 py-3 rounded-lg hover:bg-moss-deep transition"
             >
               Continue Shopping
             </Link>
           </div>
         ) : order?.status === 'pending' ? (
           <div className="text-center">
-            <Loader2 className="w-12 h-12 animate-spin text-green-600 mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            <Loader2 className="w-12 h-12 animate-spin text-moss mx-auto mb-4" />
+            <h1 className="text-2xl font-bold text-ink mb-2">
               Payment Processing...
             </h1>
-            <p className="text-gray-600">
+            <p className="text-ink-soft">
               Please wait while we confirm your payment.
             </p>
           </div>
         ) : order?.status === 'expired' ? (
           <div className="text-center">
             <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            <h1 className="text-2xl font-bold text-ink mb-2">
               Checkout Session Expired
             </h1>
-            <p className="text-gray-600 mb-8">
+            <p className="text-ink-soft mb-8">
               This checkout session was never completed and has expired. No payment was taken.
             </p>
             <Link
               to="/"
-              className="inline-block bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition"
+              className="inline-block bg-moss text-white px-6 py-3 rounded-lg hover:bg-moss-deep transition"
             >
               Return to Shop
             </Link>
           </div>
         ) : (
-          <div className="bg-white rounded-lg shadow-sm p-8">
+          <div className="bg-paper rounded-lg shadow-sm p-8">
             <div className="text-center mb-8">
-              <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              <CheckCircle className="w-16 h-16 text-moss mx-auto mb-4" />
+              <h1 className="text-3xl font-bold text-ink mb-2">
                 Order Confirmed!
               </h1>
-              <p className="text-gray-600">
+              <p className="text-ink-soft">
                 Thank you for your purchase. Your order has been received.
               </p>
             </div>
 
-            <div className="border-t pt-6">
-              <h2 className="text-lg font-semibold mb-4">Order Details</h2>
+            <div className="border-t border-stone pt-6">
+              <h2 className="text-lg font-semibold text-ink mb-4">Order Details</h2>
               <div className="space-y-3">
                 {order?.items.map((item, index) => (
                   <div
@@ -169,20 +169,20 @@ export const OrderSuccess: React.FC<PageProps> = ({
                     className="flex justify-between items-center"
                   >
                     <div>
-                      <span className="font-medium">{item.name}</span>
-                      <span className="text-gray-500 ml-2">
+                      <span className="font-medium text-ink">{item.name}</span>
+                      <span className="text-ink-soft ml-2">
                         x{item.quantity}
                       </span>
                     </div>
-                    <span className="text-gray-900">
+                    <span className="text-ink">
                       ${(item.unitPrice * item.quantity).toFixed(2)}
                     </span>
                   </div>
                 ))}
               </div>
-              <div className="border-t mt-4 pt-4 flex justify-between items-center">
-                <span className="text-lg font-bold">Total</span>
-                <span className="text-lg font-bold text-green-600">
+              <div className="border-t border-stone mt-4 pt-4 flex justify-between items-center">
+                <span className="text-lg font-bold text-ink">Total</span>
+                <span className="text-lg font-bold text-moss">
                   ${orderTotal?.toFixed(2)}
                 </span>
               </div>
@@ -191,7 +191,7 @@ export const OrderSuccess: React.FC<PageProps> = ({
             <div className="mt-8 text-center">
               <Link
                 to="/"
-                className="inline-block bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition"
+                className="inline-block bg-moss text-white px-6 py-3 rounded-lg hover:bg-moss-deep transition"
               >
                 Continue Shopping
               </Link>
