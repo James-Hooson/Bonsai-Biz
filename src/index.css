@@ -1,106 +1,198 @@
 /* ============================================================
-   BLACKWATER — Tailwind v4 theme
-   Fonts: Fraunces, Archivo, IBM Plex Mono loaded via index.html.
+   UKIYO — Tailwind v4 theme
+   Edo-period woodblock palette: Prussian blue, sumi ink, washi
+   paper, vermilion seal, cherry blossom, pine and yamabuki gold.
+   Fonts: Shippori Mincho, Zen Kaku Gothic New loaded via index.html.
    ============================================================ */
 
 @import "tailwindcss";
 
 @theme {
   /* --- Colour -------------------------------------------- */
-  --color-shore:        #E9E4DA;
-  --color-shore-deep:   #DAD3C7;
-  --color-stone:        #C4BCB9;
-  --color-paper:        #F7F4EE;
+  /* Paper */
+  --color-washi:        #F2EADB;
+  --color-washi-deep:   #E7DCC6;
+  --color-kinari:       #FAF6EE;
+  --color-rule:         #D6C8AE;
 
-  --color-water:        #0E1A17;
-  --color-water-lift:   #16241F;
-  --color-tannin:       #3A2E22;
+  /* Ink */
+  --color-sumi:         #1E1C19;
+  --color-sumi-soft:    #5E574C;
+  --color-nezumi:       #9A9081;
 
-  --color-ink:          #17211D;
-  --color-ink-soft:     #5A635C;
-  --color-ink-invert:   #EFEBE2;
-  --color-ink-invert-soft: #A6B0A6;
+  /* Hokusai's Prussian blue */
+  --color-ai:           #1D3857;
+  --color-ai-deep:      #12253C;
+  --color-hanada:       #6E8DAE;
+  --color-on-ai:        #F2EADB;
+  --color-on-ai-soft:   #B8C5D2;
 
-  --color-moss:         #4E7A52;
-  --color-moss-deep:    #3A5C3E;
-  --color-caustic:      #A8D5C8;
-  --color-amber:        #B4762F;
+  /* Accents */
+  --color-shu:          #C33F2B;
+  --color-shu-deep:     #9C2F1F;
+  --color-matsu:        #4C6A3C;
+  --color-matsu-deep:   #39512D;
+  --color-yamabuki:     #D19A2E;
+  --color-sakura:       #F2D3D6;
+  --color-sakura-deep:  #D99AA5;
+  --color-bark:         #6E5446;
 
   /* --- Type ---------------------------------------------- */
-  --font-display: "Fraunces", "Iowan Old Style", Georgia, serif;
-  --font-body:    "Archivo", "Helvetica Neue", Arial, sans-serif;
-  --font-data:    "IBM Plex Mono", ui-monospace, "SF Mono", monospace;
+  --font-display: "Shippori Mincho", "Hiragino Mincho ProN", "Yu Mincho", Georgia, serif;
+  --font-body:    "Zen Kaku Gothic New", "Hiragino Sans", "Helvetica Neue", Arial, sans-serif;
 
-  /* Fluid display sizes. Tailwind's own text-sm…text-xl stay as
-     they are — these are the extra rungs the design needs. */
-  --text-display:    clamp(2.6rem, 4vw + 1.2rem, 4.5rem);
-  --text-display--line-height: 1.05;
-  --text-display--letter-spacing: -0.02em;
+  --text-display:    clamp(2.75rem, 5vw + 1rem, 5.25rem);
+  --text-display--line-height: 1.02;
+  --text-display--letter-spacing: -0.015em;
 
-  --text-headline:   clamp(1.9rem, 2vw + 1.2rem, 2.6rem);
-  --text-headline--line-height: 1.1;
-  --text-headline--letter-spacing: -0.015em;
+  --text-headline:   clamp(1.9rem, 2vw + 1.2rem, 2.75rem);
+  --text-headline--line-height: 1.12;
+  --text-headline--letter-spacing: -0.01em;
 
-  --text-title:      clamp(1.4rem, 1vw + 1.1rem, 1.75rem);
-  --text-title--line-height: 1.2;
+  --text-title:      clamp(1.3rem, 0.8vw + 1.05rem, 1.6rem);
+  --text-title--line-height: 1.25;
 
-  --text-lede:       clamp(1.125rem, 0.5vw + 1rem, 1.25rem);
-  --text-lede--line-height: 1.55;
+  --text-lede:       clamp(1.075rem, 0.5vw + 0.95rem, 1.25rem);
+  --text-lede--line-height: 1.65;
 
   /* --- Form ---------------------------------------------- */
-  --radius-card: 4px;
-  --radius-chip: 2px;
+  --radius-card: 2px;
 
-  --shadow-lift: 0 8px 24px -12px rgb(23 33 29 / 0.28);
+  --shadow-lift: 0 18px 40px -22px rgb(18 37 60 / 0.45);
+  --shadow-print: 6px 6px 0 0 var(--color-ai);
 
-  --ease-water: cubic-bezier(0.2, 0.7, 0.3, 1);
+  --ease-ink: cubic-bezier(0.22, 0.8, 0.28, 1);
 
-  /* Page container. Use with `mx-auto w-page px-gutter`. */
+  /* Page container. Use with `max-w-page mx-auto px-gutter`. */
   --spacing-gutter: clamp(1rem, 4vw, 3rem);
   --width-page: 1240px;
+  --container-page: 1240px;
+
+  --animate-enso: enso 2.4s var(--ease-ink) infinite;
+  --animate-rise: rise 0.9s var(--ease-ink) both;
+  --animate-petal-fall: petal-fall 18s linear infinite;
+  --animate-petal-sway: petal-sway 5s ease-in-out infinite alternate;
+  --animate-fish-swim: fish-swim 30s linear infinite;
+  --animate-fish-dip: fish-dip 10s ease-in-out infinite;
+  --animate-fish-wiggle: fish-wiggle 0.8s ease-in-out infinite alternate;
+
+  @keyframes enso {
+    0%   { stroke-dashoffset: 260; transform: rotate(-90deg); }
+    55%  { stroke-dashoffset: 18;  transform: rotate(-90deg); }
+    100% { stroke-dashoffset: 18;  transform: rotate(270deg); opacity: 0; }
+  }
+  /* Wrapper is as tall as the band, so % moves it the band's full height. */
+  @keyframes petal-fall {
+    from { transform: translateY(-8%); }
+    to   { transform: translateY(105%); }
+  }
+  @keyframes petal-sway {
+    from { transform: translateX(-28px) rotate(-35deg); }
+    to   { transform: translateX(28px) rotate(160deg); }
+  }
+  /* Lane is full width, so % carries the fish from off one edge to past the other. */
+  @keyframes fish-swim {
+    from { transform: translateX(-12%); }
+    to   { transform: translateX(112%); }
+  }
+  /* Surface, glide, then sink back under the waves for a while. */
+  @keyframes fish-dip {
+    0%, 100% { opacity: 0; transform: translateY(14px); }
+    18%      { opacity: 0.9; transform: translateY(0); }
+    45%      { opacity: 0.9; transform: translateY(-4px); }
+    68%      { opacity: 0.9; transform: translateY(0); }
+    84%      { opacity: 0; transform: translateY(16px); }
+  }
+  @keyframes fish-wiggle {
+    from { transform: rotate(-2.5deg) skewY(1.5deg); }
+    to   { transform: rotate(2.5deg) skewY(-1.5deg); }
+  }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: none; }
+  }
 }
 
 /* --- Base ------------------------------------------------- */
 
 @layer base {
   body {
-    @apply bg-shore text-ink font-body antialiased;
+    @apply bg-washi text-sumi font-body antialiased;
+    /* Faint washi fibre so flat paper doesn't read as a screen colour. */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.35 0 0 0 0 0.28 0 0 0 0 0.18 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
   h1, h2, h3, h4 {
-    @apply font-display font-medium text-balance;
-    font-variation-settings: "SOFT" 0, "WONK" 1, "opsz" 40;
+    @apply font-display font-semibold text-balance;
   }
   p { @apply text-pretty; }
-  :focus-visible { @apply outline-2 outline-offset-[3px] outline-moss; }
+  ::selection { @apply bg-shu text-kinari; }
+  :focus-visible { @apply outline-2 outline-offset-[3px] outline-shu; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
 }
 
 /* --- Components ------------------------------------------- */
-/* Only the patterns that carry real design decisions live here.
-   Everything else composes from utilities at the call site. */
 
 @layer components {
 
-  /* The signature. A dark band reads as being below the surface:
-     caustic hairline on top, light falling through. */
-  .band-water {
-    @apply relative isolate bg-water text-ink-invert;
+  /* Small spaced label — the caption on a print's cartouche. */
+  .eyebrow {
+    @apply flex items-center gap-3 text-xs font-medium uppercase tracking-[0.22em] text-sumi-soft;
   }
-  .band-water::before {
+  .eyebrow::before {
     content: "";
-    @apply absolute inset-x-0 top-0 h-px opacity-50;
-    background: linear-gradient(90deg,
-      transparent, var(--color-caustic) 15%, var(--color-caustic) 85%, transparent);
+    @apply h-px w-8 bg-shu;
   }
-  .band-water::after {
-    content: "";
-    @apply absolute inset-0 -z-10 pointer-events-none;
-    background: radial-gradient(120% 60% at 50% 0%,
-      rgb(168 213 200 / 0.14), transparent 70%);
+  .band-ai .eyebrow { @apply text-on-ai-soft; }
+
+  /* Prussian-blue band: the signature surface. */
+  .band-ai {
+    @apply relative isolate overflow-hidden bg-ai text-on-ai;
   }
 
-  /* Specimen label, not marketing garnish. */
-  .eyebrow {
-    @apply font-data text-xs uppercase tracking-[0.14em] text-ink-soft;
+  /* Paper card with a hairline frame. */
+  .card-washi {
+    @apply bg-kinari border border-rule rounded-card;
   }
-  .band-water .eyebrow { @apply text-caustic; }
+
+  /* Woodblock offset: the card shifts and its key block shows behind. */
+  .print-hover {
+    @apply transition duration-300 ease-ink;
+  }
+  .print-hover:hover {
+    @apply -translate-x-1 -translate-y-1 shadow-print;
+  }
+
+  .btn-primary, .btn-seal, .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-medium tracking-[0.08em] uppercase rounded-card transition duration-300 ease-ink disabled:cursor-not-allowed;
+  }
+  .btn-primary {
+    @apply bg-ai text-on-ai hover:bg-shu disabled:bg-nezumi disabled:text-washi;
+  }
+  .btn-seal {
+    @apply bg-shu text-kinari hover:bg-shu-deep disabled:bg-nezumi;
+  }
+  .btn-ghost {
+    @apply border border-sumi text-sumi hover:bg-sumi hover:text-washi;
+  }
+  .band-ai .btn-ghost {
+    @apply border-on-ai text-on-ai hover:bg-on-ai hover:text-ai;
+  }
+
+  .field {
+    @apply w-full bg-kinari border-0 border-b border-rule px-1 py-2.5 text-sumi placeholder:text-nezumi transition focus:outline-none focus:border-shu focus:bg-washi/40;
+  }
+  .field-label {
+    @apply block text-xs font-medium uppercase tracking-[0.18em] text-sumi-soft mb-1;
+  }
+
+  .icon-tile {
+    @apply flex items-center justify-center w-12 h-12 border border-ai/25 text-ai;
+  }
 }

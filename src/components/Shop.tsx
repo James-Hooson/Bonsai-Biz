@@ -10,12 +10,15 @@ import {
   getDocs,
 } from 'firebase/firestore'
 import { db } from '../firebase'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { ADMIN_EMAILS } from '../types'
 import type { Product, CartItem, PageProps } from '../types'
 import { AdminPanel } from './AdminPanel'
 import { CartSidebar } from './CartSidebar'
 import { ProductModal } from './ProductModal'
+import { PageHero } from './PageHero'
+import { Footer } from './Footer'
+import { Enso, Blossom } from './Ornaments'
 
 export const Shop: React.FC<PageProps> = ({
   user,
@@ -202,18 +205,15 @@ export const Shop: React.FC<PageProps> = ({
     }
   }, [isAdmin])
 
-  // Auth Loading state, maybe change to add something fun liek as bonsai tree swaying
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-shore flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-xl text-ink-soft">Loading...</div>
-        </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <Enso />
       </div>
     )
   }
   return (
-    <div className="min-h-screen bg-shore">
+    <div className="min-h-screen flex flex-col">
       {/* Header */}
       <Header
         user={isAuthenticated ? user : null}
@@ -230,132 +230,156 @@ export const Shop: React.FC<PageProps> = ({
         <AdminPanel onAddProduct={() => setShowAddProduct(true)} ready={firebaseReady} />
       )}
 
-      {/* Hero Section */}
-      <section className="band-water py-16">
-        <div className="max-w-page mx-auto px-gutter">
-          <div className="text-center">
-            <p className="eyebrow mb-3">Zen Oasis</p>
-            <h2 className="text-display font-bold text-ink-invert mb-4">
-              Cultivate Tranquility
-            </h2>
-            <p className="text-lede text-ink-invert-soft mb-2">
-              Premium bonsai trees for every skill level
-            </p>
-          </div>
-        </div>
-      </section>
+      <PageHero
+        eyebrow="Zen Oasis · Living Collection"
+        title={<>Cultivate<br />Tranquility</>}
+        lede="Premium bonsai trees for every skill level"
+      >
+        <a href="#collection" className="btn-seal">
+          Browse the Collection
+        </a>
+        <Link to="/care-guide" className="btn-ghost">
+          Care Guide
+        </Link>
+      </PageHero>
 
       {/* Category Filter */}
-      <div className="max-w-page mx-auto px-gutter py-8">
-        <p className="text-sm text-ink-soft text-center mb-2">Filter by category:</p>
-        <div className="flex gap-4 overflow-x-auto pb-2 justify-center">
-          {visibleCategories.map((cat) => (
-            <button
-              key={cat.value}
-              onClick={() => setMainCategory(cat.value)}
-              className={`px-6 py-2 rounded-full whitespace-nowrap transition ${
-                mainCategory === cat.value
-                  ? 'bg-moss text-white'
-                  : 'bg-paper text-ink-soft hover:bg-shore-deep'
-              }`}
-            >
-              {cat.label}
-            </button>
-          ))}
+      <div id="collection" className="max-w-page w-full mx-auto px-gutter pt-16 pb-10 scroll-mt-24">
+        <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between border-b border-rule pb-6">
+          <div>
+            <p className="eyebrow mb-3">The Collection</p>
+            <h2 className="text-headline text-sumi">
+              {visibleCategories.find((c) => c.value === mainCategory)?.label ?? 'All'}
+              {mainCategory === 'all' && ' Specimens'}
+            </h2>
+          </div>
+          <div
+            role="group"
+            aria-label="Filter by category"
+            className="flex gap-1 overflow-x-auto -mx-1 px-1"
+          >
+            {visibleCategories.map((cat) => (
+              <button
+                key={cat.value}
+                onClick={() => setMainCategory(cat.value)}
+                aria-pressed={mainCategory === cat.value}
+                className={`group flex items-center gap-2 px-4 py-2 whitespace-nowrap text-sm border transition duration-300 ease-ink ${
+                  mainCategory === cat.value
+                    ? 'bg-sumi text-washi border-sumi'
+                    : 'border-transparent text-sumi-soft hover:border-rule hover:text-sumi'
+                }`}
+              >
+                <Blossom
+                  centre={false}
+                  className={`w-3 h-3 transition-colors ${mainCategory === cat.value ? 'text-sakura' : 'text-rule group-hover:text-sakura-deep'}`}
+                />
+                {cat.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
       {/* Products Grid */}
-      <main className="max-w-page mx-auto px-gutter pb-16">
+      <main className="max-w-page w-full mx-auto px-gutter flex-1">
         {loading ? (
-          <div className="text-center py-16">
-            <div className="text-xl text-ink-soft">Loading products...</div>
+          <div className="py-20">
+            <Enso label="Loading products…" />
           </div>
         ) : error ? (
-          <div className="text-center py-16">
-            <div className="text-xl text-red-600 mb-4">{error}</div>
+          <div className="text-center py-20">
+            <div className="font-display text-xl text-shu mb-6">{error}</div>
             <button
               onClick={() => window.location.reload()}
-              className="bg-moss text-white px-6 py-2 rounded-lg hover:bg-moss-deep transition"
+              className="btn-primary"
             >
               Try Again
             </button>
           </div>
+        ) : filteredProducts.length === 0 ? (
+          <div className="text-center py-20">
+            <Blossom centre={false} className="w-12 h-12 mx-auto mb-4 text-rule" />
+            <p className="font-display text-xl text-sumi-soft">Nothing matches — try another search or category.</p>
+          </div>
         ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {filteredProducts.map((product) => (
-            <div
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-12">
+          {filteredProducts.map((product, index) => (
+            <article
               key={product.id}
-              className="group bg-paper rounded-card border border-stone overflow-hidden transition duration-420 ease-water hover:-translate-y-0.5 hover:shadow-lift"
+              className="group flex flex-col animate-rise"
+              style={{ animationDelay: `${Math.min(index, 8) * 60}ms` }}
             >
-              <div className="relative aspect-square">
+              <div className="relative aspect-[4/5] overflow-hidden bg-washi-deep border border-rule p-2.5 transition duration-500 ease-ink group-hover:shadow-print group-hover:-translate-x-1 group-hover:-translate-y-1">
                 <img
                   src={product.image}
                   alt={product.name}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover transition duration-700 ease-ink group-hover:scale-[1.03]"
                   loading="lazy"
                   decoding="async"
                 />
+                <span className="absolute top-5 left-5 bg-kinari/90 text-sumi text-[0.65rem] uppercase tracking-[0.2em] px-2 py-1">
+                  {allCategories.find((c) => c.value === product.mainCategory)?.label ?? 'Bonsai Trees'}
+                </span>
                 {!product.inStock && (
-                  <div className="absolute bottom-0 left-0 right-0 bg-water/70 text-white text-center py-2">
-                    <span className="text-sm font-semibold">Out of Stock</span>
+                  <div className="absolute inset-2.5 bg-sumi/55 flex items-center justify-center">
+                    <span className="border border-kinari/80 text-kinari text-xs uppercase tracking-[0.3em] px-4 py-2">
+                      Out of Stock
+                    </span>
                   </div>
                 )}
                 {showAdminPanel && isAdmin && (
-                  <div className={`absolute top-2 right-2 flex gap-2 ${!firebaseReady ? 'opacity-50' : ''}`}>
+                  <div className={`absolute top-5 right-5 flex gap-2 ${!firebaseReady ? 'opacity-50' : ''}`}>
                     <button
                       onClick={() => setEditingProduct(product)}
                       disabled={!firebaseReady}
-                      className="bg-paper p-2 rounded-full shadow hover:bg-shore-deep disabled:cursor-not-allowed"
+                      aria-label={`Edit ${product.name}`}
+                      className="bg-kinari p-2 shadow hover:bg-washi disabled:cursor-not-allowed"
                     >
-                      <Edit className="w-4 h-4 text-blue-600" />
+                      <Edit aria-hidden="true" className="w-4 h-4 text-ai" />
                     </button>
                     <button
                       onClick={() => handleDeleteProduct(product.id)}
                       disabled={!firebaseReady}
-                      className="bg-paper p-2 rounded-full shadow hover:bg-shore-deep disabled:cursor-not-allowed"
+                      aria-label={`Delete ${product.name}`}
+                      className="bg-kinari p-2 shadow hover:bg-washi disabled:cursor-not-allowed"
                     >
-                      <Trash2 className="w-4 h-4 text-red-600" />
+                      <Trash2 aria-hidden="true" className="w-4 h-4 text-shu" />
                     </button>
                   </div>
                 )}
               </div>
-              <div className="p-4">
-                {' '}
-                <h3 className="font-semibold text-ink mb-1 text-lg">
-                  {' '}
-                  {product.name}
-                </h3>
-                <p className="text-sm text-ink-soft mb-2">
-                  {' '}
-                  {product.description}
-                </p>
-                <div className="flex items-center gap-1 mb-2">
-                  <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />{' '}
-                  <span className="text-sm text-ink-soft">
-                    {' '}
-                    {product.rating}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="font-data text-2xl font-bold text-moss">
-                    {' '}
+              <div className="pt-5 flex flex-col flex-1">
+                <div className="flex items-baseline justify-between gap-4 mb-2">
+                  <h3 className="text-title text-sumi">{product.name}</h3>
+                  <span className="font-display text-xl font-bold text-shu whitespace-nowrap">
                     ${product.price}
                   </span>
+                </div>
+                <p className="text-sm text-sumi-soft mb-4 line-clamp-2">{product.description}</p>
+                <div className="mt-auto flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-1.5 text-sm text-sumi-soft">
+                    <Star aria-hidden="true" className="w-4 h-4 fill-yamabuki text-yamabuki" />
+                    <span>
+                      <span className="sr-only">Rated </span>
+                      {product.rating}
+                    </span>
+                  </div>
                   <button
                     onClick={() => addToCart(product)}
                     disabled={!product.inStock}
-                    className="bg-moss text-white px-5 py-2.5 rounded-lg hover:bg-moss-deep transition disabled:bg-stone disabled:cursor-not-allowed text-base"
+                    className="btn-primary px-5 py-2.5"
                   >
                     Add to Cart
                   </button>
                 </div>
               </div>
-            </div>
+            </article>
           ))}
         </div>
         )}
       </main>
+
+      <Footer />
 
       {/* Edit/Add Product Modal */}
       {(editingProduct || showAddProduct) && (

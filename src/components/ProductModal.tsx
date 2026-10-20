@@ -41,23 +41,26 @@ export const ProductModal: React.FC<{
   return (
     <>
       <div
-        className="fixed inset-0 bg-black bg-opacity-50 z-50"
+        className="fixed inset-0 bg-ai-deep/50 backdrop-blur-sm z-50"
         onClick={onClose}
       />
       <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
-        <div className="bg-paper rounded-lg shadow-lift max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-          <div className="p-6 border-b border-stone flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-ink">
+        <div role="dialog"
+          aria-modal="true"
+          aria-labelledby="product-modal-title"
+          className="bg-washi border-t-4 border-shu shadow-lift max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="p-6 border-b border-rule flex items-center justify-between">
+            <h2 id="product-modal-title" className="font-display text-2xl text-sumi">
               {product ? 'Edit Product' : 'Add New Product'}
             </h2>
-            <button onClick={onClose}>
-              <X className="w-6 h-6" />
+            <button onClick={onClose} aria-label="Close" className="text-sumi-soft hover:text-shu">
+              <X aria-hidden="true" className="w-6 h-6" />
             </button>
           </div>
 
-          <div className="p-6 space-y-4">
+          <div className="p-6 space-y-6">
             <div>
-              <label className="block text-sm font-medium mb-2 text-ink">
+              <label className="field-label">
                 Product Name
               </label>
               <input
@@ -66,13 +69,13 @@ export const ProductModal: React.FC<{
                 onChange={(e) =>
                   setFormData({ ...formData, name: e.target.value })
                 }
-                className="w-full border border-stone rounded-lg px-4 py-2 focus:ring-2 focus:ring-moss focus:border-transparent"
+                className="field"
                 placeholder="Enter product name"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2 text-ink">
+              <label className="field-label">
                 Category
               </label>
               <select
@@ -80,7 +83,7 @@ export const ProductModal: React.FC<{
                 onChange={(e) =>
                   setFormData({ ...formData, mainCategory: e.target.value })
                 }
-                className="w-full border border-stone rounded-lg px-4 py-2 focus:ring-2 focus:ring-moss focus:border-transparent"
+                className="field"
               >
                 <option value="bonsai">Bonsai Trees</option>
                 <option value="potted-plants">Potted Plants</option>
@@ -90,7 +93,7 @@ export const ProductModal: React.FC<{
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2 text-ink">
+              <label className="field-label">
                 Description
               </label>
               <textarea
@@ -98,7 +101,7 @@ export const ProductModal: React.FC<{
                 onChange={(e) =>
                   setFormData({ ...formData, description: e.target.value })
                 }
-                className="w-full border border-stone rounded-lg px-4 py-2 focus:ring-2 focus:ring-moss focus:border-transparent"
+                className="field"
                 rows={3}
                 placeholder="Enter product description"
               />
@@ -106,7 +109,7 @@ export const ProductModal: React.FC<{
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-2 text-ink">
+                <label className="field-label">
                   Price ($)
                 </label>
                 <input
@@ -119,13 +122,13 @@ export const ProductModal: React.FC<{
                       price: parseFloat(e.target.value) || 0,
                     })
                   }
-                  className="w-full border border-stone rounded-lg px-4 py-2 focus:ring-2 focus:ring-moss focus:border-transparent"
+                  className="field"
                   placeholder="0.00"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2 text-ink">Rating</label>
+                <label className="field-label">Rating</label>
                 <input
                   type="number"
                   step="0.1"
@@ -138,13 +141,13 @@ export const ProductModal: React.FC<{
                       rating: parseFloat(e.target.value),
                     })
                   }
-                  className="w-full border border-stone rounded-lg px-4 py-2 focus:ring-2 focus:ring-moss focus:border-transparent"
+                  className="field"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2 text-ink">
+              <label className="field-label">
                 Stock Count
               </label>
               <input
@@ -156,12 +159,12 @@ export const ProductModal: React.FC<{
                   const stock = Math.max(0, parseInt(e.target.value) || 0)
                   setFormData({ ...formData, stock, inStock: stock > 0 })
                 }}
-                className="w-full border border-stone rounded-lg px-4 py-2 focus:ring-2 focus:ring-moss focus:border-transparent"
+                className="field"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2 text-ink">
+              <label className="field-label">
                 Product Image
               </label>
               <div className="space-y-2">
@@ -169,7 +172,7 @@ export const ProductModal: React.FC<{
                   <img
                     src={formData.image}
                     alt="Preview"
-                    className="w-32 h-32 object-cover rounded"
+                    className="w-32 h-32 object-cover border border-rule bg-kinari p-1"
                     loading="lazy"
                     decoding="async"
                   />
@@ -207,12 +210,12 @@ export const ProductModal: React.FC<{
                   />
                   <label
                     htmlFor="image-upload"
-                    className="flex items-center gap-2 bg-shore-deep text-ink px-4 py-2 rounded-lg cursor-pointer hover:bg-stone"
+                    className="btn-ghost cursor-pointer self-start"
                   >
-                    <Upload className="w-4 h-4" />
+                    <Upload aria-hidden="true" className="w-4 h-4" />
                     {uploading ? 'Uploading...' : 'Upload Image'}
                   </label>
-                  <span className="text-sm text-ink-soft text-center">or</span>
+                  <span className="text-xs uppercase tracking-[0.2em] text-nezumi">or</span>
                   <input
                     type="url"
                     placeholder="Enter image URL"
@@ -220,7 +223,7 @@ export const ProductModal: React.FC<{
                     onChange={(e) =>
                       setFormData({ ...formData, image: e.target.value })
                     }
-                    className="w-full border border-stone rounded-lg px-4 py-2 focus:ring-2 focus:ring-moss focus:border-transparent"
+                    className="field"
                     disabled={uploading}
                   />
                 </div>
@@ -231,14 +234,14 @@ export const ProductModal: React.FC<{
               <button
                 onClick={handleSubmit}
                 disabled={uploading}
-                className="flex-1 bg-moss text-white py-3 rounded-lg hover:bg-moss-deep flex items-center justify-center gap-2 disabled:bg-stone disabled:cursor-not-allowed"
+                className="btn-primary flex-1"
               >
-                <Save className="w-4 h-4" />
+                <Save aria-hidden="true" className="w-4 h-4" />
                 {uploading ? 'Uploading Image...' : 'Save Product'}
               </button>
               <button
                 onClick={onClose}
-                className="px-6 bg-shore-deep text-ink-soft py-3 rounded-lg hover:bg-stone"
+                className="btn-ghost"
               >
                 Cancel
               </button>

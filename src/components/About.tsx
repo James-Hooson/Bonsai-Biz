@@ -2,7 +2,38 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import { Heart, Users, Award } from 'lucide-react'
 import { Header } from './Header'
+import { PageHero } from './PageHero'
+import { Footer } from './Footer'
+import { WavePattern } from './Ornaments'
 import type { PageProps } from '../types'
+
+const values = [
+  {
+    numeral: '01',
+    icon: Award,
+    title: 'Premium Quality',
+    body: 'We source only the finest bonsai trees and materials, ensuring every piece meets our high standards.',
+  },
+  {
+    numeral: '02',
+    icon: Users,
+    title: 'Expert Guidance',
+    body: 'Our team of bonsai experts provides comprehensive care guides and personalized support.',
+  },
+  {
+    numeral: '03',
+    icon: Heart,
+    title: 'Passionate Community',
+    body: 'Join a growing community of bonsai lovers sharing knowledge, tips, and inspiration.',
+  },
+]
+
+const stats = [
+  { value: '2023', label: 'Founded' },
+  { value: '500+', label: 'Trees Sold' },
+  { value: '1000+', label: 'Happy Customers' },
+  { value: '50+', label: 'Tree Varieties' },
+]
 
 export const About: React.FC<PageProps> = ({
   user,
@@ -10,164 +41,124 @@ export const About: React.FC<PageProps> = ({
   onLogout,
 }) => {
   return (
-    <div className="min-h-screen bg-shore">
+    <div className="min-h-screen flex flex-col">
       <Header
         user={isAuthenticated ? user : null}
         onLogout={onLogout}
       />
 
-      {/* Hero Section */}
-      <section className="band-water py-16">
-        <div className="max-w-page mx-auto px-gutter">
-          <div className="text-center">
-            <p className="eyebrow mb-3">Since 2023</p>
-            <h2 className="text-display font-bold text-ink-invert mb-4">
-              About ZenBonsai
-            </h2>
-            <p className="text-lede text-ink-invert-soft">
-              Bringing the ancient art of bonsai to enthusiasts worldwide
-            </p>
-          </div>
-        </div>
-      </section>
+      <PageHero
+        eyebrow="Since 2023"
+        title="About ZenBonsai"
+        lede="Bringing the ancient art of bonsai to enthusiasts worldwide"
+      />
 
-      {/* Main Content */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <main className="flex-1">
         {/* Mission Statement */}
-        <div className="bg-paper rounded-lg shadow-sm p-8 mb-8">
-          <div className="max-w-3xl mx-auto text-center">
-            <h3 className="text-2xl font-bold text-ink mb-4">
-              Our Mission
-            </h3>
-            <p className="text-lg text-ink-soft leading-relaxed">
+        <section className="max-w-page mx-auto px-gutter py-20 md:py-28">
+          <div className="grid gap-10 md:grid-cols-[auto_1fr] md:gap-16">
+            <p className="eyebrow md:pt-3">Our Mission</p>
+            <blockquote className="font-display text-headline text-sumi max-w-4xl">
               ZenBonsai is your premier destination for high-quality bonsai
               trees and accessories. Our mission is to bring the ancient art of
               bonsai to enthusiasts around the world, making this timeless
-              practice accessible to everyone from beginners to masters.
-            </p>
+              practice accessible to everyone{' '}
+              <span className="text-shu">from beginners to masters.</span>
+            </blockquote>
           </div>
-        </div>
+        </section>
 
-        {/* Value Props Grid */}
-        <div className="grid md:grid-cols-3 gap-8 mb-12">
-          {/* Quality */}
-          <div className="bg-paper rounded-lg shadow-sm p-6 text-center hover:shadow-lift transition">
-            <div className="bg-moss/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Award className="w-8 h-8 text-moss" />
-            </div>
-            <h3 className="text-xl font-semibold text-ink mb-3">
-              Premium Quality
-            </h3>
-            <p className="text-ink-soft">
-              We source only the finest bonsai trees and materials, ensuring
-              every piece meets our high standards.
-            </p>
+        {/* Value Props */}
+        <section className="max-w-page mx-auto px-gutter">
+          <div className="grid md:grid-cols-3 border-t border-rule">
+            {values.map(({ numeral, icon: Icon, title, body }) => (
+              <div
+                key={title}
+                className="group py-10 md:px-8 md:first:pl-0 md:last:pr-0 border-b md:border-b-0 md:border-r last:border-r-0 border-rule"
+              >
+                <div className="flex items-center justify-between mb-8">
+                  <span aria-hidden="true" className="font-display text-5xl text-nezumi transition-colors duration-500 group-hover:text-shu">
+                    {numeral}
+                  </span>
+                  <Icon aria-hidden="true" className="w-6 h-6 text-ai" />
+                </div>
+                <h3 className="text-title text-sumi mb-3">{title}</h3>
+                <p className="text-sumi-soft">{body}</p>
+              </div>
+            ))}
           </div>
-
-          {/* Expertise */}
-          <div className="bg-paper rounded-lg shadow-sm p-6 text-center hover:shadow-lift transition">
-            <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Users className="w-8 h-8 text-blue-600" />
-            </div>
-            <h3 className="text-xl font-semibold text-ink mb-3">
-              Expert Guidance
-            </h3>
-            <p className="text-ink-soft">
-              Our team of bonsai experts provides comprehensive care guides and
-              personalized support.
-            </p>
-          </div>
-
-          {/* Passion */}
-          <div className="bg-paper rounded-lg shadow-sm p-6 text-center hover:shadow-lift transition">
-            <div className="bg-red-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Heart className="w-8 h-8 text-red-600" />
-            </div>
-            <h3 className="text-xl font-semibold text-ink mb-3">
-              Passionate Community
-            </h3>
-            <p className="text-ink-soft">
-              Join a growing community of bonsai lovers sharing knowledge, tips,
-              and inspiration.
-            </p>
-          </div>
-        </div>
+        </section>
 
         {/* Story Section */}
-        <div className="bg-paper rounded-lg shadow-sm overflow-hidden mb-8">
-          <div className="grid gap-8 lg:grid-cols-[5fr_7fr] lg:items-center">
-            <div className="p-8">
-              <p className="eyebrow mb-3">Since 2023</p>
-              <h3 className="text-headline text-ink mb-4">
-                Our Story
-              </h3>
-              <p className="text-ink-soft mb-4">
-                Founded in 2023, ZenBonsai began with a simple vision: to make
-                the art of bonsai accessible to everyone. What started as a
-                small collection has grown into a comprehensive marketplace
-                offering trees for every skill level.
-              </p>
-              <p className="text-ink-soft mb-4">
-                We specialize in providing premium bonsai trees, care guides,
-                and educational resources that empower our customers to
-                cultivate their own miniature masterpieces.
-              </p>
-              <p className="text-ink-soft">
-                Today, we're proud to serve thousands of bonsai enthusiasts,
-                helping them discover the meditative joy and artistic expression
-                that comes with nurturing these living sculptures.
-              </p>
+        <section className="max-w-page mx-auto px-gutter py-24">
+          <div className="grid gap-12 lg:grid-cols-[6fr_5fr] lg:items-center">
+            <div className="relative order-2 lg:order-1">
+              <div aria-hidden="true" className="absolute inset-0 translate-x-4 translate-y-4 bg-ai" />
+              <div className="relative border border-rule bg-kinari p-3">
+                <img
+                  src="https://images.unsplash.com/photo-1632161286719-5afe9b5d954b?q=80&w=745&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                  alt="Beautiful bonsai tree"
+                  className="w-full aspect-[4/3] object-cover"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
             </div>
-            <div className="relative h-64 lg:h-full">
-              <img
-                src="https://images.unsplash.com/photo-1632161286719-5afe9b5d954b?q=80&w=745&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-                alt="Beautiful bonsai tree"
-                className="w-full h-full object-cover"
-                loading="lazy"
-                decoding="async"
-              />
+            <div className="order-1 lg:order-2">
+              <p className="eyebrow mb-4">Since 2023</p>
+              <h2 className="text-headline text-sumi mb-6">Our Story</h2>
+              <div className="space-y-4 text-sumi-soft">
+                <p>
+                  Founded in 2023, ZenBonsai began with a simple vision: to make
+                  the art of bonsai accessible to everyone. What started as a
+                  small collection has grown into a comprehensive marketplace
+                  offering trees for every skill level.
+                </p>
+                <p>
+                  We specialize in providing premium bonsai trees, care guides,
+                  and educational resources that empower our customers to
+                  cultivate their own miniature masterpieces.
+                </p>
+                <p>
+                  Today, we're proud to serve thousands of bonsai enthusiasts,
+                  helping them discover the meditative joy and artistic expression
+                  that comes with nurturing these living sculptures.
+                </p>
+              </div>
             </div>
           </div>
-        </div>
+        </section>
 
         {/* Stats Section */}
-        <div className="band-water rounded-lg shadow-lift p-8 mb-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            <div>
-              <div className="text-4xl font-bold mb-2">2023</div>
-              <div className="text-caustic">Founded</div>
-            </div>
-            <div>
-              <div className="text-4xl font-bold mb-2">500+</div>
-              <div className="text-caustic">Trees Sold</div>
-            </div>
-            <div>
-              <div className="text-4xl font-bold mb-2">1000+</div>
-              <div className="text-caustic">Happy Customers</div>
-            </div>
-            <div>
-              <div className="text-4xl font-bold mb-2">50+</div>
-              <div className="text-caustic">Tree Varieties</div>
-            </div>
+        <section className="band-ai">
+          <WavePattern id="seigaiha-about" className="absolute inset-0 -z-10 text-on-ai/10" />
+          <div className="max-w-page mx-auto px-gutter py-16">
+            <dl className="grid grid-cols-2 md:grid-cols-4 gap-y-10">
+              {stats.map((s) => (
+                <div key={s.label} className="flex flex-col-reverse text-center md:border-l first:border-l-0 border-on-ai/20">
+                  <dt className="text-xs uppercase tracking-[0.22em] text-yamabuki">{s.label}</dt>
+                  <dd className="font-display text-4xl md:text-5xl font-bold text-on-ai mb-2">{s.value}</dd>
+                </div>
+              ))}
+            </dl>
           </div>
-        </div>
+        </section>
 
         {/* CTA Section */}
-        <div className="text-center">
-          <h3 className="text-2xl font-bold text-ink mb-4">
+        <section className="max-w-page mx-auto px-gutter pt-24 text-center">
+          <h2 className="text-headline text-sumi mb-4">
             Ready to start your bonsai journey?
-          </h3>
-          <p className="text-ink-soft mb-6">
+          </h2>
+          <p className="text-sumi-soft mb-8">
             Explore our collection and find the perfect tree for you.
           </p>
-          <Link
-            to="/"
-            className="inline-block bg-moss text-white px-8 py-3 rounded-lg hover:bg-moss-deep transition"
-          >
+          <Link to="/" className="btn-primary">
             Browse Our Collection
           </Link>
-        </div>
-      </div>
+        </section>
+      </main>
+
+      <Footer />
     </div>
   )
 }

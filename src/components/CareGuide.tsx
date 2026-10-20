@@ -2,7 +2,37 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import { Droplets, Sun, Scissors, Sprout, Package } from 'lucide-react'
 import { Header } from './Header'
+import { PageHero } from './PageHero'
+import { Footer } from './Footer'
+import { Seal } from './Ornaments'
 import type { PageProps } from '../types'
+
+const steps = [
+  {
+    cadence: 'Check daily',
+    icon: Droplets,
+    title: 'Watering',
+    body: 'Water your bonsai when the topsoil feels dry. Avoid overwatering, as it can lead to root rot. Check soil moisture daily and adjust based on season and indoor conditions.',
+  },
+  {
+    cadence: '4–6 hours a day',
+    icon: Sun,
+    title: 'Lighting',
+    body: 'Place your bonsai in a location with plenty of indirect sunlight. Most bonsai species thrive with 4-6 hours of light daily. Rotate your tree weekly for even growth.',
+  },
+  {
+    cadence: 'As it grows',
+    icon: Scissors,
+    title: 'Pruning',
+    body: 'Regularly prune your bonsai to maintain its shape and encourage healthy growth. Use sharp, clean tools to avoid damaging the tree. Remove dead branches and trim new growth.',
+  },
+  {
+    cadence: 'Every 4–6 weeks',
+    icon: Sprout,
+    title: 'Fertilizing',
+    body: 'Feed your bonsai with a balanced fertilizer every 4-6 weeks during the growing season (spring and summer). Reduce feeding in fall and winter when growth slows.',
+  },
+]
 
 export const CareGuide: React.FC<PageProps> = ({
   user,
@@ -10,134 +40,89 @@ export const CareGuide: React.FC<PageProps> = ({
   onLogout,
 }) => {
   return (
-    <div className="min-h-screen bg-shore">
+    <div className="min-h-screen flex flex-col">
       <Header
         user={isAuthenticated ? user : null}
         onLogout={onLogout}
       />
 
-      {/* Hero Section */}
-      <section className="band-water py-16">
-        <div className="max-w-page mx-auto px-gutter">
-          <div className="text-center">
-            <p className="eyebrow mb-3">Watering · Light · Pruning · Feed</p>
-            <h2 className="text-display font-bold text-ink-invert mb-4">
-              Bonsai Care Guide
-            </h2>
-            <p className="text-lede text-ink-invert-soft">
-              Everything you need to know to keep your bonsai thriving
-            </p>
-          </div>
-        </div>
-      </section>
+      <PageHero
+        eyebrow="Watering · Light · Pruning · Feed"
+        title="Bonsai Care Guide"
+        lede="Everything you need to know to keep your bonsai thriving"
+      />
 
-      {/* Content */}
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <p className="text-lg text-ink-soft mb-12 text-center">
+      <main className="flex-1 max-w-page w-full mx-auto px-gutter">
+        <p className="font-display text-title text-sumi max-w-3xl py-20">
           Caring for your bonsai tree is essential to ensure its health and
           longevity. Follow these guidelines to help your miniature tree
           flourish.
         </p>
 
-        {/* Care Cards */}
-        <div className="grid md:grid-cols-2 gap-8 mb-12">
-          {/* Watering Card */}
-          <div className="bg-paper rounded-lg shadow-sm p-6 hover:shadow-lift transition">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="bg-blue-100 p-3 rounded-full">
-                <Droplets className="w-6 h-6 text-blue-600" />
+        {/* Care steps */}
+        <ol className="border-t border-sumi">
+          {steps.map(({ cadence, icon: Icon, title, body }, i) => (
+            <li
+              key={title}
+              className="group grid gap-6 py-10 border-b border-rule md:grid-cols-[8rem_1fr_2fr] md:items-start md:gap-12"
+            >
+              <span
+                aria-hidden="true"
+                className="font-display text-7xl leading-none text-rule transition-colors duration-500 group-hover:text-shu"
+              >
+                {String(i + 1).padStart(2, '0')}
+              </span>
+              <div>
+                <h2 className="text-headline text-sumi mb-1">{title}</h2>
+                <p className="flex items-center gap-2 text-sm text-sumi-soft">
+                  <Icon aria-hidden="true" className="w-4 h-4 text-ai" />
+                  {cadence}
+                </p>
               </div>
-              <h2 className="text-2xl font-semibold text-ink">Watering</h2>
-            </div>
-            <p className="text-ink-soft">
-              Water your bonsai when the topsoil feels dry. Avoid overwatering,
-              as it can lead to root rot. Check soil moisture daily and adjust
-              based on season and indoor conditions.
-            </p>
-          </div>
-
-          {/* Lighting Card */}
-          <div className="bg-paper rounded-lg shadow-sm p-6 hover:shadow-lift transition">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="bg-yellow-100 p-3 rounded-full">
-                <Sun className="w-6 h-6 text-yellow-600" />
-              </div>
-              <h2 className="text-2xl font-semibold text-ink">Lighting</h2>
-            </div>
-            <p className="text-ink-soft">
-              Place your bonsai in a location with plenty of indirect sunlight.
-              Most bonsai species thrive with 4-6 hours of light daily. Rotate
-              your tree weekly for even growth.
-            </p>
-          </div>
-
-          {/* Pruning Card */}
-          <div className="bg-paper rounded-lg shadow-sm p-6 hover:shadow-lift transition">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="bg-moss/10 p-3 rounded-full">
-                <Scissors className="w-6 h-6 text-moss" />
-              </div>
-              <h2 className="text-2xl font-semibold text-ink">Pruning</h2>
-            </div>
-            <p className="text-ink-soft">
-              Regularly prune your bonsai to maintain its shape and encourage
-              healthy growth. Use sharp, clean tools to avoid damaging the tree.
-              Remove dead branches and trim new growth.
-            </p>
-          </div>
-
-          {/* Fertilizing Card */}
-          <div className="bg-paper rounded-lg shadow-sm p-6 hover:shadow-lift transition">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="bg-purple-100 p-3 rounded-full">
-                <Sprout className="w-6 h-6 text-purple-600" />
-              </div>
-              <h2 className="text-2xl font-semibold text-ink">
-                Fertilizing
-              </h2>
-            </div>
-            <p className="text-ink-soft">
-              Feed your bonsai with a balanced fertilizer every 4-6 weeks during
-              the growing season (spring and summer). Reduce feeding in fall and
-              winter when growth slows.
-            </p>
-          </div>
-        </div>
+              <p className="text-lede text-sumi-soft">{body}</p>
+            </li>
+          ))}
+        </ol>
 
         {/* Repotting Section */}
-        <div className="bg-paper rounded-lg shadow-sm p-8">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="bg-orange-100 p-3 rounded-full">
-              <Package className="w-6 h-6 text-orange-600" />
+        <section className="mt-20 grid gap-10 lg:grid-cols-[1fr_1fr] lg:items-stretch">
+          <div className="card-washi p-8 md:p-12">
+            <div className="flex items-center gap-4 mb-6">
+              <span className="icon-tile">
+                <Package aria-hidden="true" className="w-6 h-6" />
+              </span>
+              <h2 className="text-headline text-sumi">Repotting</h2>
             </div>
-            <h2 className="text-2xl font-semibold text-ink">Repotting</h2>
-          </div>
-          <p className="text-ink-soft mb-4">
-            Repot your bonsai every 2-3 years to refresh the soil and provide
-            more space for root growth. Spring is the best time for repotting,
-            just before the growing season begins.
-          </p>
-          <div className="bg-shore-deep border-l-4 border-moss p-4 mt-4">
-            <p className="text-moss-deep font-medium">
-              Pro Tip: When repotting, trim about one-third of the root mass to
-              encourage new, healthy root growth.
+            <p className="text-lede text-sumi-soft">
+              Repot your bonsai every 2-3 years to refresh the soil and provide
+              more space for root growth. Spring is the best time for repotting,
+              just before the growing season begins.
             </p>
           </div>
-        </div>
+          <aside className="band-ai p-8 md:p-12 flex flex-col justify-between gap-8">
+            <div className="flex items-center justify-between">
+              <p className="eyebrow">Pro Tip</p>
+              <Seal />
+            </div>
+            <p className="font-display text-title text-on-ai">
+              When repotting, trim about one-third of the root mass to
+              encourage new, healthy root growth.
+            </p>
+          </aside>
+        </section>
 
         {/* CTA Section */}
-        <div className="text-center mt-12">
-          <h3 className="text-2xl font-bold text-ink mb-4">
+        <section className="text-center pt-24">
+          <h2 className="text-headline text-sumi mb-8">
             Need supplies for your bonsai?
-          </h3>
-          <Link
-            to="/"
-            className="inline-block bg-moss text-white px-8 py-3 rounded-lg hover:bg-moss-deep transition"
-          >
+          </h2>
+          <Link to="/" className="btn-primary">
             Shop Our Collection
           </Link>
-        </div>
-      </div>
+        </section>
+      </main>
+
+      <Footer />
     </div>
   )
 }

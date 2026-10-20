@@ -1,16 +1,26 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
+import { Link, NavLink } from 'react-router-dom'
 import {
   Search,
   ShoppingCart,
   Menu,
   X,
-  Leaf,
   LogOut,
   User as UserIcon,
 } from 'lucide-react'
 import type { User } from '@auth0/auth0-spa-js'
 import { ADMIN_EMAILS } from '../types'
+import { Seal, Blossom } from './Ornaments'
+
+const navLinkClass = ({ isActive }: { isActive: boolean }) =>
+  `relative py-2 text-sm tracking-[0.08em] transition-colors after:absolute after:left-1/2 after:-bottom-0.5 after:h-1 after:w-1 after:-translate-x-1/2 after:rounded-full after:bg-shu after:transition-opacity ${
+    isActive ? 'text-sumi after:opacity-100' : 'text-sumi-soft hover:text-shu after:opacity-0'
+  }`
+
+const mobileLinkClass = ({ isActive }: { isActive: boolean }) =>
+  `flex items-center justify-between py-3 border-b border-rule font-display text-xl ${
+    isActive ? 'text-shu' : 'text-sumi hover:text-shu'
+  }`
 
 interface HeaderProps {
   user?: User | null
@@ -44,15 +54,20 @@ export const Header: React.FC<HeaderProps> = ({
     }
   }
   return (
-    <header className="sticky top-0 z-40 border-b border-stone bg-shore/90 backdrop-blur-md">
+    <header className="sticky top-0 z-40 border-b border-rule bg-washi/85 backdrop-blur-md">
       <div className="max-w-page mx-auto px-gutter">
-        <div className="flex justify-between items-center h-16">
-          <Link to="/" className="flex items-center gap-2">
-            <Leaf className="w-8 h-8 text-moss" />
-            <h1 className="text-2xl font-bold text-ink tracking-tight">Zen Oasis</h1>
+        <div className="flex justify-between items-center h-20">
+          <Link to="/" className="group flex items-center gap-3" aria-label="Zen Oasis — home">
+            <Seal className="w-10 h-10 transition-transform duration-500 ease-ink group-hover:-rotate-6" />
+            <span className="flex flex-col leading-none">
+              <span className="font-display text-2xl font-bold text-sumi">Zen Oasis</span>
+              <span className="mt-1 text-[0.65rem] uppercase tracking-[0.32em] text-sumi-soft">
+                Bonsai &amp; Aquascape
+              </span>
+            </span>
           </Link>
 
-          <nav className="hidden md:flex items-center gap-6">
+          <nav aria-label="Main" className="hidden md:flex items-center gap-8">
             <div
               ref={shopDropdownRef}
               className="relative"
@@ -64,9 +79,9 @@ export const Header: React.FC<HeaderProps> = ({
               }}
             >
               <div className="flex items-center gap-1">
-                <Link to="/" className="border-b-2 border-transparent py-2 text-ink-soft transition-colors hover:border-moss hover:text-moss">
+                <NavLink to="/" end className={navLinkClass}>
                   Shop
-                </Link>
+                </NavLink>
                 <button
                   type="button"
                   aria-expanded={shopDropdownOpen}
@@ -75,7 +90,7 @@ export const Header: React.FC<HeaderProps> = ({
                   aria-label="Toggle shop categories"
                   onClick={() => setShopDropdownOpen((prev) => !prev)}
                   onFocus={() => setShopDropdownOpen(true)}
-                  className="text-ink-soft hover:text-moss"
+                  className="text-sumi-soft hover:text-shu"
                 >
                   <svg
                     aria-hidden="true"
@@ -98,12 +113,12 @@ export const Header: React.FC<HeaderProps> = ({
                 <div
                   id="shop-dropdown-menu"
                   role="menu"
-                  className="absolute top-full left-0 w-48 bg-paper shadow-lift rounded-lg pt-1 pb-2 z-50"
+                  className="absolute top-full -left-4 w-56 card-washi shadow-lift py-2 z-50 border-t-2 border-t-shu"
                 >
                   <Link
                     to="/?category=bonsai"
                     role="menuitem"
-                    className="block px-4 py-2 text-ink-soft hover:bg-shore-deep hover:text-moss"
+                    className="block px-5 py-2 text-sm text-sumi-soft hover:bg-washi hover:text-shu transition-colors"
                     onClick={() => setShopDropdownOpen(false)}
                   >
                     Bonsai
@@ -111,7 +126,7 @@ export const Header: React.FC<HeaderProps> = ({
                   <Link
                     to="/?category=potted-plants"
                     role="menuitem"
-                    className="block px-4 py-2 text-ink-soft hover:bg-shore-deep hover:text-moss"
+                    className="block px-5 py-2 text-sm text-sumi-soft hover:bg-washi hover:text-shu transition-colors"
                     onClick={() => setShopDropdownOpen(false)}
                   >
                     Potted Plants
@@ -119,7 +134,7 @@ export const Header: React.FC<HeaderProps> = ({
                   <Link
                     to="/?category=aquatic-plants"
                     role="menuitem"
-                    className="block px-4 py-2 text-ink-soft hover:bg-shore-deep hover:text-moss"
+                    className="block px-5 py-2 text-sm text-sumi-soft hover:bg-washi hover:text-shu transition-colors"
                     onClick={() => setShopDropdownOpen(false)}
                   >
                     Aquatic Plants
@@ -127,16 +142,16 @@ export const Header: React.FC<HeaderProps> = ({
                   <Link
                     to="/?category=tanks"
                     role="menuitem"
-                    className="block px-4 py-2 text-ink-soft hover:bg-shore-deep hover:text-moss"
+                    className="block px-5 py-2 text-sm text-sumi-soft hover:bg-washi hover:text-shu transition-colors"
                     onClick={() => setShopDropdownOpen(false)}
                   >
                     Tanks
                   </Link>
-                  <div className="border-t border-stone my-1"></div>
+                  <div className="border-t border-rule my-1 mx-5"></div>
                   <Link
                     to="/"
                     role="menuitem"
-                    className="block px-4 py-2 text-ink-soft hover:bg-shore-deep hover:text-moss"
+                    className="block px-5 py-2 text-sm text-sumi-soft hover:bg-washi hover:text-shu transition-colors"
                     onClick={() => setShopDropdownOpen(false)}
                   >
                     All Products
@@ -144,24 +159,24 @@ export const Header: React.FC<HeaderProps> = ({
                 </div>
               )}
             </div>
-            <Link to="/about" className="border-b-2 border-transparent py-2 text-ink-soft transition-colors hover:border-moss hover:text-moss">
+            <NavLink to="/about" className={navLinkClass}>
               About
-            </Link>
-            <Link
+            </NavLink>
+            <NavLink
               to="/care-guide"
-              className="border-b-2 border-transparent py-2 text-ink-soft transition-colors hover:border-moss hover:text-moss"
+              className={navLinkClass}
             >
               Care Guide
-            </Link>
-            <Link
+            </NavLink>
+            <NavLink
               to="/aquascaping"
-              className="border-b-2 border-transparent py-2 text-ink-soft transition-colors hover:border-moss hover:text-moss"
+              className={navLinkClass}
             >
               Aquascaping
-            </Link>
-            <Link to="/contact" className="border-b-2 border-transparent py-2 text-ink-soft transition-colors hover:border-moss hover:text-moss">
+            </NavLink>
+            <NavLink to="/contact" className={navLinkClass}>
               Contact
-            </Link>
+            </NavLink>
           </nav>
 
           <div className="flex items-center gap-4">
@@ -175,7 +190,7 @@ export const Header: React.FC<HeaderProps> = ({
                   autoComplete="off"
                   value={searchQuery}
                   onChange={(e) => onSearchChange?.(e.target.value)}
-                  className="border border-stone rounded-lg px-4 py-2 w-64 focus:ring-2 focus:ring-moss focus:border-transparent"
+                  className="field w-40 sm:w-64 bg-transparent"
                   autoFocus
                 />
               )}
@@ -184,7 +199,7 @@ export const Header: React.FC<HeaderProps> = ({
                   onClick={onSearchClick}
                   aria-expanded={searchOpen}
                   aria-label={searchOpen ? 'Close search' : 'Open search'}
-                  className="text-ink-soft hover:text-moss"
+                  className="text-sumi-soft hover:text-shu"
                 >
                   <Search aria-hidden="true" className="w-6 h-6" />
                 </button>
@@ -196,11 +211,11 @@ export const Header: React.FC<HeaderProps> = ({
               <button
                 onClick={onCartOpen}
                 aria-label={`Open cart${cartItemCount > 0 ? ` (${cartItemCount} item${cartItemCount === 1 ? '' : 's'})` : ''}`}
-                className="relative text-ink-soft hover:text-moss"
+                className="relative text-sumi-soft hover:text-shu"
               >
                 <ShoppingCart aria-hidden="true" className="w-6 h-6" />
                 {cartItemCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-moss text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  <span className="absolute -top-2 -right-2.5 bg-shu text-kinari text-[0.65rem] font-bold rounded-full w-5 h-5 flex items-center justify-center">
                     {cartItemCount}
                   </span>
                 )}
@@ -208,7 +223,7 @@ export const Header: React.FC<HeaderProps> = ({
             )}
 
             {!onCartOpen && (
-              <Link to="/" aria-label="Go to shop" className="text-ink-soft hover:text-moss">
+              <Link to="/" aria-label="Go to shop" className="text-sumi-soft hover:text-shu">
                 <ShoppingCart aria-hidden="true" className="w-6 h-6" />
               </Link>
             )}
@@ -219,7 +234,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <Link
                   to="/"
                   aria-label="Admin"
-                  className="text-ink-soft hover:text-moss flex items-center gap-1"
+                  className="text-sumi-soft hover:text-shu flex items-center gap-1"
                 >
                   <UserIcon aria-hidden="true" className="w-5 h-5" />
                   <span className="hidden sm:inline" aria-hidden="true">Admin</span>
@@ -228,7 +243,7 @@ export const Header: React.FC<HeaderProps> = ({
                   <button
                     onClick={onLogout}
                     aria-label="Log out"
-                    className="text-ink-soft hover:text-moss"
+                    className="text-sumi-soft hover:text-shu"
                   >
                     <LogOut aria-hidden="true" className="w-5 h-5" />
                   </button>
@@ -242,7 +257,7 @@ export const Header: React.FC<HeaderProps> = ({
               aria-expanded={mobileMenuOpen}
               aria-controls="mobile-menu"
               aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
-              className="md:hidden text-ink-soft"
+              className="md:hidden text-sumi"
             >
               {mobileMenuOpen ? (
                 <X aria-hidden="true" className="w-6 h-6" />
@@ -255,38 +270,26 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       {mobileMenuOpen && (
-        <div id="mobile-menu" className="md:hidden border-t border-stone bg-paper">
-          <nav className="px-4 py-4 space-y-2">
-            <Link
-              to="/"
-              className="block text-ink-soft hover:text-moss py-2"
-            >
-              Shop
-            </Link>
-            <Link
-              to="/about"
-              className="block text-ink-soft hover:text-moss py-2"
-            >
-              About
-            </Link>
-            <Link
-              to="/care-guide"
-              className="block text-ink-soft hover:text-moss py-2"
-            >
-              Care Guide
-            </Link>
-            <Link
-              to="/aquascaping"
-              className="block text-ink-soft hover:text-moss py-2"
-            >
-              Aquascaping
-            </Link>
-            <Link
-              to="/contact"
-              className="block text-ink-soft hover:text-moss py-2"
-            >
-              Contact
-            </Link>
+        <div id="mobile-menu" className="md:hidden border-t border-rule bg-washi">
+          <nav aria-label="Mobile" className="px-gutter pt-2 pb-6">
+            {[
+              { to: '/', label: 'Shop' },
+              { to: '/about', label: 'About' },
+              { to: '/care-guide', label: 'Care Guide' },
+              { to: '/aquascaping', label: 'Aquascaping' },
+              { to: '/contact', label: 'Contact' },
+            ].map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.to === '/'}
+                className={mobileLinkClass}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                {item.label}
+                <Blossom centre={false} className="w-3.5 h-3.5 text-rule" />
+              </NavLink>
+            ))}
           </nav>
         </div>
       )}

@@ -3,7 +3,9 @@ import { useSearchParams, Link } from 'react-router-dom'
 import { doc, onSnapshot } from 'firebase/firestore'
 import { db } from '../firebase'
 import { Header } from './Header'
-import { CheckCircle, Loader2, AlertCircle } from 'lucide-react'
+import { Check, AlertCircle, Clock } from 'lucide-react'
+import { Footer } from './Footer'
+import { Enso, Seal } from './Ornaments'
 
 import type { PageProps } from '../types'
 
@@ -65,16 +67,25 @@ export const OrderSuccess: React.FC<PageProps> = ({
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-shore flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-xl text-ink-soft">Loading...</div>
-        </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <Enso />
       </div>
     )
   }
 
+  const notice = (icon: React.ReactNode, title: string, message: string, cta: string) => (
+    <div className="text-center">
+      <Seal className="w-16 h-16 mx-auto mb-8">{icon}</Seal>
+      <h1 className="text-headline text-sumi mb-3">{title}</h1>
+      <p className="text-sumi-soft mb-10">{message}</p>
+      <Link to="/" className="btn-primary">
+        {cta}
+      </Link>
+    </div>
+  )
+
   return (
-    <div className="min-h-screen bg-shore">
+    <div className="min-h-screen flex flex-col">
       <Header
         user={isAuthenticated ? user : null}
         onLogout={onLogout}
@@ -86,119 +97,86 @@ export const OrderSuccess: React.FC<PageProps> = ({
         onSearchChange={() => {}}
       />
 
-      <main className="max-w-2xl mx-auto px-4 py-16">
+      <main className="flex-1 w-full max-w-2xl mx-auto px-gutter py-24">
         {loading ? (
-          <div className="text-center">
-            <Loader2 className="w-12 h-12 animate-spin text-moss mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-ink">
-              Loading order...
-            </h1>
-          </div>
+          <Enso label="Loading order…" />
         ) : error ? (
-          <div className="text-center">
-            <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-ink mb-2">Error</h1>
-            <p className="text-ink-soft mb-8">{error}</p>
-            <Link
-              to="/"
-              className="inline-block bg-moss text-white px-6 py-3 rounded-lg hover:bg-moss-deep transition"
-            >
-              Return to Shop
-            </Link>
-          </div>
+          notice(<AlertCircle className="w-8 h-8" />, 'Error', error, 'Return to Shop')
         ) : !isAuthenticated ? (
-          <div className="bg-paper rounded-lg shadow-sm p-8 text-center">
-            <CheckCircle className="w-16 h-16 text-moss mx-auto mb-4" />
-            <h1 className="text-3xl font-bold text-ink mb-2">
-              Order Confirmed!
-            </h1>
-            <p className="text-ink-soft mb-8">
-              Thank you for your purchase. A confirmation has been sent to your email.
-            </p>
-            <Link
-              to="/"
-              className="inline-block bg-moss text-white px-6 py-3 rounded-lg hover:bg-moss-deep transition"
-            >
-              Continue Shopping
-            </Link>
-          </div>
+          notice(
+            <Check className="w-8 h-8" />,
+            'Order Confirmed!',
+            'Thank you for your purchase. A confirmation has been sent to your email.',
+            'Continue Shopping',
+          )
         ) : order?.status === 'pending' ? (
           <div className="text-center">
-            <Loader2 className="w-12 h-12 animate-spin text-moss mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-ink mb-2">
-              Payment Processing...
-            </h1>
-            <p className="text-ink-soft">
+            <Enso label="Payment Processing..." />
+            <p className="text-sumi-soft mt-2">
               Please wait while we confirm your payment.
             </p>
           </div>
         ) : order?.status === 'expired' ? (
-          <div className="text-center">
-            <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-ink mb-2">
-              Checkout Session Expired
-            </h1>
-            <p className="text-ink-soft mb-8">
-              This checkout session was never completed and has expired. No payment was taken.
-            </p>
-            <Link
-              to="/"
-              className="inline-block bg-moss text-white px-6 py-3 rounded-lg hover:bg-moss-deep transition"
-            >
-              Return to Shop
-            </Link>
-          </div>
+          notice(
+            <Clock className="w-8 h-8" />,
+            'Checkout Session Expired',
+            'This checkout session was never completed and has expired. No payment was taken.',
+            'Return to Shop',
+          )
         ) : (
-          <div className="bg-paper rounded-lg shadow-sm p-8">
-            <div className="text-center mb-8">
-              <CheckCircle className="w-16 h-16 text-moss mx-auto mb-4" />
-              <h1 className="text-3xl font-bold text-ink mb-2">
-                Order Confirmed!
-              </h1>
-              <p className="text-ink-soft">
-                Thank you for your purchase. Your order has been received.
-              </p>
+          <div className="card-washi relative p-8 md:p-12">
+            <span aria-hidden="true" className="absolute top-0 inset-x-0 h-1 bg-ai" />
+            <div className="flex items-start justify-between gap-6 mb-10">
+              <div>
+                <p className="eyebrow mb-4">Receipt</p>
+                <h1 className="text-headline text-sumi mb-2">Order Confirmed!</h1>
+                <p className="text-sumi-soft">
+                  Thank you for your purchase. Your order has been received.
+                </p>
+              </div>
+              <Seal className="w-16 h-16 shrink-0 -rotate-6">
+                <Check className="w-8 h-8" />
+              </Seal>
             </div>
 
-            <div className="border-t border-stone pt-6">
-              <h2 className="text-lg font-semibold text-ink mb-4">Order Details</h2>
-              <div className="space-y-3">
+            <div className="border-t border-sumi pt-6">
+              <h2 className="field-label mb-4">Order Details</h2>
+              <ul className="divide-y divide-dashed divide-rule">
                 {order?.items.map((item, index) => (
-                  <div
+                  <li
                     key={index}
-                    className="flex justify-between items-center"
+                    className="flex justify-between items-baseline py-3"
                   >
                     <div>
-                      <span className="font-medium text-ink">{item.name}</span>
-                      <span className="text-ink-soft ml-2">
+                      <span className="font-display text-lg text-sumi">{item.name}</span>
+                      <span className="text-sumi-soft ml-2 text-sm">
                         x{item.quantity}
                       </span>
                     </div>
-                    <span className="text-ink">
+                    <span className="text-sumi">
                       ${(item.unitPrice * item.quantity).toFixed(2)}
                     </span>
-                  </div>
+                  </li>
                 ))}
-              </div>
-              <div className="border-t border-stone mt-4 pt-4 flex justify-between items-center">
-                <span className="text-lg font-bold text-ink">Total</span>
-                <span className="text-lg font-bold text-moss">
+              </ul>
+              <div className="border-t-2 border-double border-sumi mt-2 pt-4 flex justify-between items-baseline">
+                <span className="font-display text-xl text-sumi">Total</span>
+                <span className="font-display text-2xl font-bold text-shu">
                   ${orderTotal?.toFixed(2)}
                 </span>
               </div>
             </div>
 
-            <div className="mt-8 text-center">
-              <Link
-                to="/"
-                className="inline-block bg-moss text-white px-6 py-3 rounded-lg hover:bg-moss-deep transition"
-              >
+            <div className="mt-10 text-center">
+              <Link to="/" className="btn-primary">
                 Continue Shopping
               </Link>
             </div>
           </div>
         )}
       </main>
+
+      <Footer />
     </div>
   )
 }
