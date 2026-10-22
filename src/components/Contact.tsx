@@ -164,10 +164,10 @@ export const Contact: React.FC<PageProps> = ({
                   You can reach us by phone at:
                 </p>
                 <a
-                  href="tel:+11234567890"
+                  href="tel:+64279772954"
                   className="font-display text-xl text-sumi hover:text-shu"
                 >
-                  (123) 456-7890
+                  027 977 2954
                 </a>
               </div>
             </div>
