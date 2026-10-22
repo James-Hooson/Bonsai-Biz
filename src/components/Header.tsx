@@ -55,6 +55,10 @@ export const Header: React.FC<HeaderProps> = ({
   }
   return (
     <header className="sticky top-0 z-40 border-b border-rule bg-washi/85 backdrop-blur-md">
+      <div role="note" className="bg-ai px-gutter py-2 text-center text-xs sm:text-sm tracking-[0.04em] text-on-ai">
+        <span className="font-medium text-on-ai">Demo site:</span>{' '}
+        <span className="text-on-ai-soft">this store is not currently functional and products shown are not for sale.</span>
+      </div>
       <div className="max-w-page mx-auto px-gutter">
         <div className="flex justify-between items-center h-20">
           <Link to="/" className="group flex items-center gap-3" aria-label="Zen Oasis — home">
