@@ -85,7 +85,7 @@ export const ProductModal: React.FC<{
                 }
                 className="field"
               >
-                <option value="bonsai">Bonsai Trees</option>
+                <option value="bonsai">Bonsai</option>
                 <option value="potted-plants">Potted Plants</option>
                 <option value="aquatic-plants">Aquatic Plants</option>
                 <option value="tanks">Tanks</option>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import { Star, Edit, Trash2 } from 'lucide-react'
+import { Edit, Trash2 } from 'lucide-react'
 import { Header } from './Header'
 import {
   collection,
@@ -41,7 +41,7 @@ export const Shop: React.FC<PageProps> = ({
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const allCategories: { value: string; label: string }[] = [
-    { value: 'bonsai', label: 'Bonsai Trees' },
+    { value: 'bonsai', label: 'Bonsai' },
     { value: 'potted-plants', label: 'Potted Plants' },
     { value: 'aquatic-plants', label: 'Aquatic Plants' },
     { value: 'tanks', label: 'Tanks' },
@@ -318,7 +318,7 @@ export const Shop: React.FC<PageProps> = ({
                   decoding="async"
                 />
                 <span className="absolute top-5 left-5 bg-kinari/90 text-sumi text-[0.65rem] uppercase tracking-[0.2em] px-2 py-1">
-                  {allCategories.find((c) => c.value === product.mainCategory)?.label ?? 'Bonsai Trees'}
+                  {allCategories.find((c) => c.value === product.mainCategory)?.label ?? 'Bonsai'}
                 </span>
                 {!product.inStock && (
                   <div className="absolute inset-2.5 bg-sumi/55 flex items-center justify-center">
@@ -356,14 +356,7 @@ export const Shop: React.FC<PageProps> = ({
                   </span>
                 </div>
                 <p className="text-sm text-sumi-soft mb-4 line-clamp-2">{product.description}</p>
-                <div className="mt-auto flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-1.5 text-sm text-sumi-soft">
-                    <Star aria-hidden="true" className="w-4 h-4 fill-yamabuki text-yamabuki" />
-                    <span>
-                      <span className="sr-only">Rated </span>
-                      {product.rating}
-                    </span>
-                  </div>
+                <div className="mt-auto flex items-center justify-end gap-4">
                   <button
                     onClick={() => addToCart(product)}
                     disabled={!product.inStock}
