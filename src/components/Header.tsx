@@ -151,6 +151,14 @@ export const Header: React.FC<HeaderProps> = ({
                   >
                     Tanks
                   </Link>
+                  <Link
+                    to="/?category=aquascaping"
+                    role="menuitem"
+                    className="block px-5 py-2 text-sm text-sumi-soft hover:bg-washi hover:text-shu transition-colors"
+                    onClick={() => setShopDropdownOpen(false)}
+                  >
+                    Aquascaping
+                  </Link>
                   <div className="border-t border-rule my-1 mx-5"></div>
                   <Link
                     to="/"
@@ -163,9 +171,6 @@ export const Header: React.FC<HeaderProps> = ({
                 </div>
               )}
             </div>
-            <NavLink to="/about" className={navLinkClass}>
-              About
-            </NavLink>
             <NavLink
               to="/care-guide"
               className={navLinkClass}
@@ -180,6 +185,9 @@ export const Header: React.FC<HeaderProps> = ({
             </NavLink>
             <NavLink to="/contact" className={navLinkClass}>
               Contact
+            </NavLink>
+            <NavLink to="/about" className={navLinkClass}>
+              About
             </NavLink>
           </nav>
 
@@ -278,10 +286,10 @@ export const Header: React.FC<HeaderProps> = ({
           <nav aria-label="Mobile" className="px-gutter pt-2 pb-6">
             {[
               { to: '/', label: 'Shop' },
-              { to: '/about', label: 'About' },
               { to: '/care-guide', label: 'Care Guide' },
               { to: '/aquascaping', label: 'Aquascaping' },
               { to: '/contact', label: 'Contact' },
+              { to: '/about', label: 'About' },
             ].map((item) => (
               <NavLink
                 key={item.to}

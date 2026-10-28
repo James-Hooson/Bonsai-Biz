@@ -45,6 +45,7 @@ export const Shop: React.FC<PageProps> = ({
     { value: 'potted-plants', label: 'Potted Plants' },
     { value: 'aquatic-plants', label: 'Aquatic Plants' },
     { value: 'tanks', label: 'Tanks' },
+    { value: 'aquascaping', label: 'Aquascaping' },
   ]
 
   const usedCategoryValues = new Set(products.map((p) => p.mainCategory))

@@ -16,7 +16,6 @@ export const ProductModal: React.FC<{
       price: 0,
       image: '',
       mainCategory: 'bonsai',
-      rating: 5.0,
       inStock: true,
       stock: 0,
       description: '',
@@ -89,6 +88,7 @@ export const ProductModal: React.FC<{
                 <option value="potted-plants">Potted Plants</option>
                 <option value="aquatic-plants">Aquatic Plants</option>
                 <option value="tanks">Tanks</option>
+                <option value="aquascaping">Aquascaping</option>
               </select>
             </div>
 
@@ -128,39 +128,21 @@ export const ProductModal: React.FC<{
               </div>
 
               <div>
-                <label className="field-label">Rating</label>
+                <label className="field-label">
+                  Stock Count
+                </label>
                 <input
                   type="number"
-                  step="0.1"
                   min="0"
-                  max="5"
-                  value={formData.rating}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      rating: parseFloat(e.target.value),
-                    })
-                  }
+                  step="1"
+                  value={formData.stock}
+                  onChange={(e) => {
+                    const stock = Math.max(0, parseInt(e.target.value) || 0)
+                    setFormData({ ...formData, stock, inStock: stock > 0 })
+                  }}
                   className="field"
                 />
               </div>
-            </div>
-
-            <div>
-              <label className="field-label">
-                Stock Count
-              </label>
-              <input
-                type="number"
-                min="0"
-                step="1"
-                value={formData.stock}
-                onChange={(e) => {
-                  const stock = Math.max(0, parseInt(e.target.value) || 0)
-                  setFormData({ ...formData, stock, inStock: stock > 0 })
-                }}
-                className="field"
-              />
             </div>
 
             <div>

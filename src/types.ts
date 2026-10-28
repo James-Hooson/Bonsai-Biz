@@ -17,7 +17,6 @@ export interface Product {
   price: number
   image: string
   mainCategory: string
-  rating: number
   inStock: boolean
   stock: number
   description: string

@@ -5,7 +5,7 @@ import { Blossom } from './Ornaments'
 
 export type DeliveryMethod = 'pickup' | 'delivery'
 
-export const DELIVERY_FEE = 10
+export const DELIVERY_FEE = 15
 
 interface CartSidebarProps {
   cart: CartItem[]

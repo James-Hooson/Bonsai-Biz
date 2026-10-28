@@ -28,7 +28,6 @@ describe('CartSidebar', () => {
         price: 40,
         image: '',
         mainCategory: 'bonsai',
-        rating: 5,
         inStock: true,
         stock: 3,
         description: 'A juniper bonsai tree',

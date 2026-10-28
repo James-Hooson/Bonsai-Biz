@@ -23,7 +23,7 @@ interface CheckoutItem {
   quantity: number
 }
 
-const DELIVERY_FEE_NZD = 10
+const DELIVERY_FEE_NZD = 15
 
 interface CheckoutRequestBody {
   items: CheckoutItem[]
