@@ -8,6 +8,13 @@ service cloud.firestore {
         && request.auth.token.email in ['jmhooson48@gmail.com', 'zenoasisnz@gmail.com'];
     }
 
+    // Page copy edited in admin mode: public read, admin-only write
+    match /pageContent/{pageId} {
+      allow read: if true;
+      allow write: if request.auth != null
+        && request.auth.token.email in ['jmhooson48@gmail.com', 'zenoasisnz@gmail.com'];
+    }
+
     // Orders: readable only by the customer who placed it or an admin
     // Writes are handled exclusively by Cloud Functions (Admin SDK bypasses these rules)
     match /orders/{orderId} {

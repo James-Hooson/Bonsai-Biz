@@ -5,22 +5,28 @@ import { Header } from './Header'
 import { PageHero } from './PageHero'
 import { Footer } from './Footer'
 import { WavePattern } from './Ornaments'
+import { PageContentProvider, EditableText } from './EditableContent'
+import { ADMIN_EMAILS } from '../types'
 import type { PageProps } from '../types'
 
+// `id` keys each item's editable text, so it must stay stable if items are reordered.
 const values = [
   {
+    id: 'quality',
     numeral: '01',
     icon: Award,
     title: 'Premium Quality',
     body: 'We source only the finest bonsai trees and materials, ensuring every piece meets our high standards.',
   },
   {
+    id: 'guidance',
     numeral: '02',
     icon: Users,
     title: 'Expert Guidance',
     body: 'Our team of bonsai experts provides comprehensive care guides and personalized support.',
   },
   {
+    id: 'community',
     numeral: '03',
     icon: Heart,
     title: 'Passionate Community',
@@ -29,18 +35,22 @@ const values = [
 ]
 
 const stats = [
-  { value: '2023', label: 'Founded' },
-  { value: '500+', label: 'Trees Sold' },
-  { value: '1000+', label: 'Happy Customers' },
-  { value: '50+', label: 'Tree Varieties' },
+  { id: 'founded', value: '2023', label: 'Founded' },
+  { id: 'treesSold', value: '500+', label: 'Trees Sold' },
+  { id: 'customers', value: '1000+', label: 'Happy Customers' },
+  { id: 'varieties', value: '50+', label: 'Tree Varieties' },
 ]
 
 export const About: React.FC<PageProps> = ({
   user,
   isAuthenticated,
+  firebaseReady,
   onLogout,
 }) => {
+  const isAdmin = isAuthenticated && !!user?.email && ADMIN_EMAILS.includes(user.email)
+
   return (
+    <PageContentProvider page="about" canEdit={isAdmin && firebaseReady}>
     <div className="min-h-screen flex flex-col">
       <Header
         user={isAuthenticated ? user : null}
@@ -48,22 +58,32 @@ export const About: React.FC<PageProps> = ({
       />
 
       <PageHero
-        eyebrow="Since 2023"
-        title="About ZenBonsai"
-        lede="Bringing the ancient art of bonsai to enthusiasts worldwide"
+        eyebrow={<EditableText field="heroEyebrow">Since 2023</EditableText>}
+        title={<EditableText field="heroTitle">About ZenBonsai</EditableText>}
+        lede={
+          <EditableText field="heroLede">
+            Bringing the ancient art of bonsai to enthusiasts worldwide
+          </EditableText>
+        }
       />
 
       <main className="flex-1">
         {/* Mission Statement */}
         <section className="max-w-page mx-auto px-gutter py-20 md:py-28">
           <div className="grid gap-10 md:grid-cols-[auto_1fr] md:gap-16">
-            <p className="eyebrow md:pt-3">Our Mission</p>
+            <EditableText field="missionEyebrow" as="p" className="eyebrow md:pt-3">
+              Our Mission
+            </EditableText>
             <blockquote className="font-display text-headline text-sumi max-w-4xl">
-              ZenBonsai is your premier destination for high-quality bonsai
-              trees and accessories. Our mission is to bring the ancient art of
-              bonsai to enthusiasts around the world, making this timeless
-              practice accessible to everyone{' '}
-              <span className="text-shu">from beginners to masters.</span>
+              <EditableText field="mission" multiline>
+                ZenBonsai is your premier destination for high-quality bonsai
+                trees and accessories. Our mission is to bring the ancient art of
+                bonsai to enthusiasts around the world, making this timeless
+                practice accessible to everyone
+              </EditableText>{' '}
+              <EditableText field="missionHighlight" className="text-shu">
+                from beginners to masters.
+              </EditableText>
             </blockquote>
           </div>
         </section>
@@ -71,9 +91,9 @@ export const About: React.FC<PageProps> = ({
         {/* Value Props */}
         <section className="max-w-page mx-auto px-gutter">
           <div className="grid md:grid-cols-3 border-t border-rule">
-            {values.map(({ numeral, icon: Icon, title, body }) => (
+            {values.map(({ id, numeral, icon: Icon, title, body }) => (
               <div
-                key={title}
+                key={id}
                 className="group py-10 md:px-8 md:first:pl-0 md:last:pr-0 border-b md:border-b-0 md:border-r last:border-r-0 border-rule"
               >
                 <div className="flex items-center justify-between mb-8">
@@ -82,8 +102,12 @@ export const About: React.FC<PageProps> = ({
                   </span>
                   <Icon aria-hidden="true" className="w-6 h-6 text-ai" />
                 </div>
-                <h3 className="text-title text-sumi mb-3">{title}</h3>
-                <p className="text-sumi-soft">{body}</p>
+                <EditableText field={`value-${id}-title`} as="h3" className="text-title text-sumi mb-3">
+                  {title}
+                </EditableText>
+                <EditableText field={`value-${id}-body`} as="p" className="text-sumi-soft" multiline>
+                  {body}
+                </EditableText>
               </div>
             ))}
           </div>
@@ -105,25 +129,29 @@ export const About: React.FC<PageProps> = ({
               </div>
             </div>
             <div className="order-1 lg:order-2">
-              <p className="eyebrow mb-4">Since 2023</p>
-              <h2 className="text-headline text-sumi mb-6">Our Story</h2>
+              <EditableText field="storyEyebrow" as="p" className="eyebrow mb-4">
+                Since 2023
+              </EditableText>
+              <EditableText field="storyTitle" as="h2" className="text-headline text-sumi mb-6">
+                Our Story
+              </EditableText>
               <div className="space-y-4 text-sumi-soft">
-                <p>
+                <EditableText field="story1" as="p" multiline>
                   Founded in 2023, ZenBonsai began with a simple vision: to make
                   the art of bonsai accessible to everyone. What started as a
                   small collection has grown into a comprehensive marketplace
                   offering trees for every skill level.
-                </p>
-                <p>
+                </EditableText>
+                <EditableText field="story2" as="p" multiline>
                   We specialize in providing premium bonsai trees, care guides,
                   and educational resources that empower our customers to
                   cultivate their own miniature masterpieces.
-                </p>
-                <p>
+                </EditableText>
+                <EditableText field="story3" as="p" multiline>
                   Today, we're proud to serve thousands of bonsai enthusiasts,
                   helping them discover the meditative joy and artistic expression
                   that comes with nurturing these living sculptures.
-                </p>
+                </EditableText>
               </div>
             </div>
           </div>
@@ -135,9 +163,13 @@ export const About: React.FC<PageProps> = ({
           <div className="max-w-page mx-auto px-gutter py-16">
             <dl className="grid grid-cols-2 md:grid-cols-4 gap-y-10">
               {stats.map((s) => (
-                <div key={s.label} className="flex flex-col-reverse text-center md:border-l first:border-l-0 border-on-ai/20">
-                  <dt className="text-xs uppercase tracking-[0.22em] text-yamabuki">{s.label}</dt>
-                  <dd className="font-display text-4xl md:text-5xl font-bold text-on-ai mb-2">{s.value}</dd>
+                <div key={s.id} className="flex flex-col-reverse text-center md:border-l first:border-l-0 border-on-ai/20">
+                  <EditableText field={`stat-${s.id}-label`} as="dt" className="text-xs uppercase tracking-[0.22em] text-yamabuki">
+                    {s.label}
+                  </EditableText>
+                  <EditableText field={`stat-${s.id}-value`} as="dd" className="font-display text-4xl md:text-5xl font-bold text-on-ai mb-2">
+                    {s.value}
+                  </EditableText>
                 </div>
               ))}
             </dl>
@@ -146,20 +178,21 @@ export const About: React.FC<PageProps> = ({
 
         {/* CTA Section */}
         <section className="max-w-page mx-auto px-gutter pt-24 text-center">
-          <h2 className="text-headline text-sumi mb-4">
+          <EditableText field="ctaTitle" as="h2" className="text-headline text-sumi mb-4">
             Ready to start your bonsai journey?
-          </h2>
-          <p className="text-sumi-soft mb-8">
+          </EditableText>
+          <EditableText field="ctaBody" as="p" className="text-sumi-soft mb-8">
             Explore our collection and find the perfect tree for you.
-          </p>
+          </EditableText>
           <Link to="/" className="btn-primary">
-            Browse Our Collection
+            <EditableText field="ctaButton">Browse Our Collection</EditableText>
           </Link>
         </section>
       </main>
 
       <Footer />
     </div>
+    </PageContentProvider>
   )
 }
 

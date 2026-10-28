@@ -5,20 +5,26 @@ import { Header } from './Header'
 import { PageHero } from './PageHero'
 import { Footer } from './Footer'
 import { WavePattern, Seal } from './Ornaments'
+import { PageContentProvider, EditableText } from './EditableContent'
+import { ADMIN_EMAILS } from '../types'
 import type { PageProps } from '../types'
 
+// `id` keys each item's editable text, so it must stay stable if items are reordered.
 const services = [
   {
+    id: 'setup',
     icon: Waves,
     title: 'Tank Setup',
     body: 'Full tank builds from scratch — we handle substrate, hardscape, planting, lighting, and filtration to create a thriving aquascape tailored to your vision.',
   },
   {
+    id: 'servicing',
     icon: Wrench,
     title: 'Servicing',
     body: 'Regular maintenance visits to keep your tank in peak condition — water changes, plant trimming, filter cleans, and water parameter checks.',
   },
   {
+    id: 'consultation',
     icon: MessageCircle,
     title: 'Consultation',
     body: 'Not sure where to start? Our experts can advise on tank size, livestock compatibility, plant selection, CO₂ systems, and more — in person or online.',
@@ -27,21 +33,25 @@ const services = [
 
 const offerings = [
   {
+    id: 'tanks',
     icon: Fish,
     title: 'Planted & Nature-Style Tanks',
     body: 'Dutch, Iwagumi, jungle — any style designed to your taste.',
   },
   {
+    id: 'plants',
     icon: Leaf,
     title: 'Live Plant Selection',
     body: 'Foreground carpets, midground accents, and background stems sourced fresh.',
   },
   {
+    id: 'water',
     icon: Droplets,
     title: 'Water Chemistry Support',
     body: 'CO₂ injection, fertilisation schedules, and parameter balancing.',
   },
   {
+    id: 'maintenance',
     icon: Wrench,
     title: 'Ongoing Maintenance Plans',
     body: 'Weekly or fortnightly visits so your tank always looks its best.',
@@ -49,18 +59,22 @@ const offerings = [
 ]
 
 const stats = [
-  { value: '50+', label: 'Tanks Built' },
-  { value: '100%', label: 'Custom Designs' },
-  { value: 'NZ-Wide', label: 'Service Area' },
-  { value: 'Free', label: 'Initial Consult' },
+  { id: 'built', value: '50+', label: 'Tanks Built' },
+  { id: 'custom', value: '100%', label: 'Custom Designs' },
+  { id: 'area', value: 'NZ-Wide', label: 'Service Area' },
+  { id: 'consult', value: 'Free', label: 'Initial Consult' },
 ]
 
 export const Aquascaping: React.FC<PageProps> = ({
   user,
   isAuthenticated,
+  firebaseReady,
   onLogout,
 }) => {
+  const isAdmin = isAuthenticated && !!user?.email && ADMIN_EMAILS.includes(user.email)
+
   return (
+    <PageContentProvider page="aquascaping" canEdit={isAdmin && firebaseReady}>
     <div className="min-h-screen flex flex-col">
       <Header
         user={isAuthenticated ? user : null}
@@ -68,12 +82,16 @@ export const Aquascaping: React.FC<PageProps> = ({
       />
 
       <PageHero
-        eyebrow="Design · Build · Maintain"
-        title="Aquascaping"
-        lede="Beautiful underwater landscapes — designed, built, and maintained by us"
+        eyebrow={<EditableText field="heroEyebrow">Design · Build · Maintain</EditableText>}
+        title={<EditableText field="heroTitle">Aquascaping</EditableText>}
+        lede={
+          <EditableText field="heroLede">
+            Beautiful underwater landscapes — designed, built, and maintained by us
+          </EditableText>
+        }
       >
         <Link to="/contact" className="btn-seal">
-          Book a Free Consult
+          <EditableText field="heroButton">Book a Free Consult</EditableText>
         </Link>
       </PageHero>
 
@@ -81,22 +99,26 @@ export const Aquascaping: React.FC<PageProps> = ({
         {/* Intro */}
         <section className="max-w-page mx-auto px-gutter py-20 md:py-28 grid gap-8 md:grid-cols-[1fr_2fr] md:gap-16">
           <div>
-            <p className="eyebrow mb-4">The Art</p>
-            <h2 className="text-headline text-sumi">Bring Your Tank to Life</h2>
+            <EditableText field="introEyebrow" as="p" className="eyebrow mb-4">
+              The Art
+            </EditableText>
+            <EditableText field="introTitle" as="h2" className="text-headline text-sumi">
+              Bring Your Tank to Life
+            </EditableText>
           </div>
-          <p className="text-lede text-sumi-soft">
+          <EditableText field="introBody" as="p" className="text-lede text-sumi-soft" multiline>
             Aquascaping is the art of arranging aquatic plants, rocks, and driftwood
             into a stunning underwater garden. Whether you're starting fresh or looking
             to transform an existing tank, we offer everything from full setup and design
             through to ongoing servicing and expert consultation.
-          </p>
+          </EditableText>
         </section>
 
         {/* Services Grid */}
         <section className="max-w-page mx-auto px-gutter">
           <div className="grid gap-8 md:grid-cols-3">
-            {services.map(({ icon: Icon, title, body }, i) => (
-              <div key={title} className="card-washi print-hover relative p-8 overflow-hidden">
+            {services.map(({ id, icon: Icon, title, body }, i) => (
+              <div key={id} className="card-washi print-hover relative p-8 overflow-hidden">
                 <span
                   aria-hidden="true"
                   className="absolute right-4 -top-3 font-display text-[7rem] leading-none text-washi-deep select-none"
@@ -107,8 +129,12 @@ export const Aquascaping: React.FC<PageProps> = ({
                   <span className="icon-tile mb-8">
                     <Icon aria-hidden="true" className="w-6 h-6" />
                   </span>
-                  <h3 className="text-title text-sumi mb-3">{title}</h3>
-                  <p className="text-sumi-soft">{body}</p>
+                  <EditableText field={`service-${id}-title`} as="h3" className="text-title text-sumi mb-3">
+                    {title}
+                  </EditableText>
+                  <EditableText field={`service-${id}-body`} as="p" className="text-sumi-soft" multiline>
+                    {body}
+                  </EditableText>
                 </div>
               </div>
             ))}
@@ -119,15 +145,23 @@ export const Aquascaping: React.FC<PageProps> = ({
         <section className="max-w-page mx-auto px-gutter py-24">
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
             <div>
-              <p className="eyebrow mb-4">Services</p>
-              <h2 className="text-headline text-sumi mb-8">What We Offer</h2>
+              <EditableText field="offerEyebrow" as="p" className="eyebrow mb-4">
+                Services
+              </EditableText>
+              <EditableText field="offerTitle" as="h2" className="text-headline text-sumi mb-8">
+                What We Offer
+              </EditableText>
               <ul className="divide-y divide-rule border-y border-rule">
-                {offerings.map(({ icon: Icon, title, body }) => (
-                  <li key={title} className="flex items-start gap-5 py-5">
+                {offerings.map(({ id, icon: Icon, title, body }) => (
+                  <li key={id} className="flex items-start gap-5 py-5">
                     <Icon aria-hidden="true" className="w-5 h-5 mt-1 text-shu shrink-0" />
                     <div>
-                      <p className="font-display text-lg font-semibold text-sumi">{title}</p>
-                      <p className="text-sumi-soft text-sm">{body}</p>
+                      <EditableText field={`offer-${id}-title`} as="p" className="font-display text-lg font-semibold text-sumi">
+                        {title}
+                      </EditableText>
+                      <EditableText field={`offer-${id}-body`} as="p" className="text-sumi-soft text-sm" multiline>
+                        {body}
+                      </EditableText>
                     </div>
                   </li>
                 ))}
@@ -154,9 +188,13 @@ export const Aquascaping: React.FC<PageProps> = ({
           <div className="max-w-page mx-auto px-gutter py-16">
             <dl className="grid grid-cols-2 md:grid-cols-4 gap-y-10">
               {stats.map((s) => (
-                <div key={s.label} className="flex flex-col-reverse text-center md:border-l first:border-l-0 border-on-ai/20">
-                  <dt className="text-xs uppercase tracking-[0.22em] text-yamabuki">{s.label}</dt>
-                  <dd className="font-display text-4xl md:text-5xl font-bold text-on-ai mb-2">{s.value}</dd>
+                <div key={s.id} className="flex flex-col-reverse text-center md:border-l first:border-l-0 border-on-ai/20">
+                  <EditableText field={`stat-${s.id}-label`} as="dt" className="text-xs uppercase tracking-[0.22em] text-yamabuki">
+                    {s.label}
+                  </EditableText>
+                  <EditableText field={`stat-${s.id}-value`} as="dd" className="font-display text-4xl md:text-5xl font-bold text-on-ai mb-2">
+                    {s.value}
+                  </EditableText>
                 </div>
               ))}
             </dl>
@@ -167,20 +205,20 @@ export const Aquascaping: React.FC<PageProps> = ({
         <section className="max-w-page mx-auto px-gutter pt-24 grid gap-12 lg:grid-cols-[3fr_2fr] lg:items-center">
           <div className="flex gap-6 border-l-2 border-shu pl-6">
             <Seal className="w-10 h-10 shrink-0" />
-            <p className="font-display text-title text-sumi">
+            <EditableText field="tip" as="p" className="font-display text-title text-sumi" multiline>
               Pro Tip: The key to a thriving aquascape is balancing light, CO₂, and nutrients.
               Get in touch and we'll walk you through the ideal setup for your space.
-            </p>
+            </EditableText>
           </div>
           <div className="card-washi p-8 text-center lg:text-left">
-            <h2 className="text-title text-sumi mb-3">
+            <EditableText field="ctaTitle" as="h2" className="text-title text-sumi mb-3">
               Ready to create your perfect aquascape?
-            </h2>
-            <p className="text-sumi-soft mb-6">
+            </EditableText>
+            <EditableText field="ctaBody" as="p" className="text-sumi-soft mb-6">
               Reach out for a free consultation and let's design something beautiful.
-            </p>
+            </EditableText>
             <Link to="/contact" className="btn-primary">
-              Get in Touch
+              <EditableText field="ctaButton">Get in Touch</EditableText>
             </Link>
           </div>
         </section>
@@ -188,6 +226,7 @@ export const Aquascaping: React.FC<PageProps> = ({
 
       <Footer />
     </div>
+    </PageContentProvider>
   )
 }
 

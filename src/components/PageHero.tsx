@@ -2,9 +2,9 @@ import React from 'react'
 import { WavePattern, WaveEdge, SakuraBranch, PetalFall, FishSchool } from './Ornaments'
 
 interface PageHeroProps {
-  eyebrow: string
+  eyebrow: React.ReactNode
   title: React.ReactNode
-  lede?: string
+  lede?: React.ReactNode
   children?: React.ReactNode
 }
 
