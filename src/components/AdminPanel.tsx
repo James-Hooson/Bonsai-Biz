@@ -85,7 +85,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onAddProduct, ready }) =
     }
   }
 
-  const visibleOrders = hideDone ? orders.filter((o) => !o.fulfilledAt) : orders
+  // Done orders sink below the rest; sort is stable, so each group stays newest first.
+  const visibleOrders = (hideDone ? orders.filter((o) => !o.fulfilledAt) : orders)
+    .slice()
+    .sort((a, b) => Number(!!a.fulfilledAt) - Number(!!b.fulfilledAt))
 
   return (
     <div className="bg-kinari border-b border-rule">
