@@ -1,9 +1,25 @@
 import React from 'react'
 import { Plus, Package, Truck, RefreshCw } from 'lucide-react'
-import { collection, query, orderBy, limit, onSnapshot } from 'firebase/firestore'
+import {
+  collection,
+  query,
+  orderBy,
+  limit,
+  onSnapshot,
+  doc,
+  updateDoc,
+  serverTimestamp,
+} from 'firebase/firestore'
 import { db } from '../firebase'
 
 const ORDERS_PAGE_SIZE = 25
+
+// `completed` is what the Stripe webhook writes once payment succeeds.
+const STATUS_LABELS: Record<string, string> = {
+  completed: 'Paid',
+  pending: 'Awaiting payment',
+  expired: 'Expired',
+}
 
 interface ShippingAddress {
   name: string | null
@@ -23,6 +39,7 @@ interface Order {
   shippingAddress?: ShippingAddress
   items: Array<{ name: string; quantity: number; unitPrice: number }>
   createdAt: { toDate: () => Date } | null
+  fulfilledAt?: { toDate: () => Date } | null
 }
 
 interface AdminPanelProps {
@@ -35,18 +52,40 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onAddProduct, ready }) =
   const [tab, setTab] = React.useState<'orders' | 'products'>('orders')
   const [pageSize, setPageSize] = React.useState(ORDERS_PAGE_SIZE)
   const [hasMore, setHasMore] = React.useState(false)
+  const [hideDone, setHideDone] = React.useState(false)
+  const [updatingId, setUpdatingId] = React.useState<string | null>(null)
 
   React.useEffect(() => {
     if (!ready) return
     const q = query(collection(db, 'orders'), orderBy('createdAt', 'desc'), limit(pageSize))
     const unsub = onSnapshot(q, (snap) => {
       setOrders(
-        snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<Order, 'id'>) }))
+        snap.docs.map((d) => ({
+          id: d.id,
+          // Estimate pending server timestamps so a just-ticked order doesn't flicker unticked.
+          ...(d.data({ serverTimestamps: 'estimate' }) as Omit<Order, 'id'>),
+        }))
       )
       setHasMore(snap.docs.length === pageSize)
     })
     return unsub
   }, [ready, pageSize])
+
+  const toggleDone = async (order: Order) => {
+    setUpdatingId(order.id)
+    try {
+      await updateDoc(doc(db, 'orders', order.id), {
+        fulfilledAt: order.fulfilledAt ? null : serverTimestamp(),
+      })
+    } catch (err) {
+      console.error('Failed to update order:', err)
+      alert('Could not update the order. Please try again.')
+    } finally {
+      setUpdatingId(null)
+    }
+  }
+
+  const visibleOrders = hideDone ? orders.filter((o) => !o.fulfilledAt) : orders
 
   return (
     <div className="bg-kinari border-b border-rule">
@@ -78,6 +117,17 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onAddProduct, ready }) =
               </button>
             </div>
           </div>
+          {tab === 'orders' && (
+            <label className="flex items-center gap-2 text-sm text-sumi-soft cursor-pointer">
+              <input
+                type="checkbox"
+                checked={hideDone}
+                onChange={(e) => setHideDone(e.target.checked)}
+                className="w-4 h-4 accent-shu"
+              />
+              Hide done orders
+            </label>
+          )}
           {tab === 'products' && (
             <button
               onClick={onAddProduct}
@@ -99,11 +149,15 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onAddProduct, ready }) =
               </p>
             ) : orders.length === 0 ? (
               <p className="text-sumi-soft text-sm py-2">No orders yet.</p>
+            ) : visibleOrders.length === 0 ? (
+              <p className="text-sumi-soft text-sm py-2">All caught up — every order is done.</p>
             ) : (
-              orders.map((order) => (
+              visibleOrders.map((order) => (
                 <div
                   key={order.id}
-                  className="bg-washi border border-rule p-4"
+                  className={`border border-rule p-4 transition-opacity ${
+                    order.fulfilledAt ? 'bg-kinari opacity-60' : 'bg-washi'
+                  }`}
                 >
                   <div className="flex items-start justify-between gap-4 flex-wrap">
                     <div>
@@ -125,7 +179,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onAddProduct, ready }) =
                               : 'bg-yamabuki/20 text-sumi'
                           }`}
                         >
-                          {order.status}
+                          {STATUS_LABELS[order.status] ?? order.status}
                         </span>
                       </div>
                       <p className="text-xs text-sumi-soft">
@@ -134,6 +188,20 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onAddProduct, ready }) =
                           ? ` · ${order.createdAt.toDate().toLocaleDateString('en-NZ', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}`
                           : ''}
                       </p>
+                      {order.status === 'completed' && (
+                        <label className="mt-2 inline-flex items-center gap-2 text-sm text-sumi cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={!!order.fulfilledAt}
+                            disabled={updatingId === order.id}
+                            onChange={() => toggleDone(order)}
+                            className="w-4 h-4 accent-shu"
+                          />
+                          {order.fulfilledAt
+                            ? `Done · ${order.fulfilledAt.toDate().toLocaleDateString('en-NZ', { day: 'numeric', month: 'short' })}`
+                            : 'Mark as done'}
+                        </label>
+                      )}
                     </div>
 
                     {/* Delivery address */}

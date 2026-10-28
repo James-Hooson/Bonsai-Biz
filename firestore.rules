@@ -16,12 +16,18 @@ service cloud.firestore {
     }
 
     // Orders: readable only by the customer who placed it or an admin
-    // Writes are handled exclusively by Cloud Functions (Admin SDK bypasses these rules)
+    // Writes are handled by Cloud Functions (Admin SDK bypasses these rules), except
+    // that admins may tick an order off as done by setting `fulfilledAt` and nothing else
     match /orders/{orderId} {
       allow read: if request.auth != null &&
         (request.auth.token.email == resource.data.userEmail ||
          request.auth.token.email in ['jmhooson48@gmail.com', 'zenoasisnz@gmail.com']);
-      allow write: if false;
+      allow update: if request.auth != null
+        && request.auth.token.email in ['jmhooson48@gmail.com', 'zenoasisnz@gmail.com']
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['fulfilledAt'])
+        && (request.resource.data.fulfilledAt == null
+            || request.resource.data.fulfilledAt == request.time);
+      allow create, delete: if false;
     }
   }
 }
