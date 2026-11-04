@@ -3,6 +3,7 @@ import { defineSecret } from 'firebase-functions/params'
 import * as admin from 'firebase-admin'
 import Stripe from 'stripe'
 import { randomUUID } from 'node:crypto'
+import { quantitiesByProduct, releasePendingOrder } from './orderStock'
 
 const STRIPE_SECRET_KEY = defineSecret('STRIPE_SECRET_KEY')
 
@@ -24,6 +25,9 @@ interface CheckoutItem {
 }
 
 const DELIVERY_FEE_NZD = 15
+const RESERVATION_SECONDS = 31 * 60
+
+class UnavailableItemError extends Error {}
 
 interface CheckoutRequestBody {
   items: CheckoutItem[]
@@ -74,111 +78,140 @@ export const createCheckoutSession = onRequest(
     const stripe = new Stripe(STRIPE_SECRET_KEY.value())
     const db = admin.firestore()
 
+    // Stock is reserved (deducted) here, when the order is created, rather than
+    // when payment completes - otherwise two customers could both be sent to
+    // Stripe for the last item. The webhook returns it if the session expires.
+    const orderRef = db.collection('orders').doc(idempotencyKey)
+    const deliveryFee = deliveryMethod === 'delivery' ? DELIVERY_FEE_NZD : 0
+    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = []
+
     try {
-      // Fetch products from Firestore and build line items
-      const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = []
-      const orderItems: Array<{
-        productId: string
-        name: string
-        quantity: number
-        unitPrice: number
-      }> = []
+      const existingOrder = await db.runTransaction(async (tx) => {
+        // Transactions may be retried on contention, so start from a clean slate.
+        lineItems.length = 0
 
-      for (const item of items) {
-        const productDoc = await db
-          .collection('products')
-          .doc(item.productId)
-          .get()
-
-        if (!productDoc.exists) {
-          console.error(`Checkout attempted with unknown product ${item.productId}`)
-          res.status(400).json({ error: 'One or more items in your cart are unavailable' })
-          return
+        // Order already exists for this idempotency key - this is a retry.
+        const existing = await tx.get(orderRef)
+        if (existing.exists) {
+          return {
+            sessionId: (existing.data()?.stripeSessionId ?? null) as string | null,
+            status: existing.data()?.status as string,
+          }
         }
 
-        const productData = productDoc.data()!
-        const availableStock: number = productData.stock ?? 0
-        if (availableStock <= 0) {
-          console.error(`Checkout attempted for out-of-stock product ${item.productId}`)
-          res.status(400).json({ error: 'One or more items in your cart are unavailable' })
-          return
-        }
-        if (availableStock < item.quantity) {
-          console.error(
-            `Checkout requested quantity ${item.quantity} for ${item.productId} but only ${availableStock} in stock`
-          )
-          res.status(400).json({ error: 'One or more items in your cart are unavailable' })
-          return
+        const quantities = quantitiesByProduct(items)
+        const productRefs = [...quantities.keys()].map((id) => db.collection('products').doc(id))
+        const productSnaps = await Promise.all(productRefs.map((ref) => tx.get(ref)))
+        const products = new Map(productSnaps.map((snap, i) => [productRefs[i].id, snap]))
+
+        for (const [productId, quantity] of quantities) {
+          const productDoc = products.get(productId)!
+          if (!productDoc.exists) {
+            console.error(`Checkout attempted with unknown product ${productId}`)
+            throw new UnavailableItemError()
+          }
+          const availableStock: number = productDoc.data()!.stock ?? 0
+          if (availableStock <= 0) {
+            console.error(`Checkout attempted for out-of-stock product ${productId}`)
+            throw new UnavailableItemError()
+          }
+          if (availableStock < quantity) {
+            console.error(
+              `Checkout requested quantity ${quantity} for ${productId} but only ${availableStock} in stock`
+            )
+            throw new UnavailableItemError()
+          }
         }
 
-        lineItems.push({
-          price_data: {
-            currency: 'nzd',
-            product_data: {
-              name: productData.name,
-              description: productData.description,
-              images: productData.image ? [productData.image] : undefined,
+        const orderItems = items.map((item) => {
+          const productData = products.get(item.productId)!.data()!
+          lineItems.push({
+            price_data: {
+              currency: 'nzd',
+              product_data: {
+                name: productData.name,
+                description: productData.description,
+                images: productData.image ? [productData.image] : undefined,
+              },
+              unit_amount: Math.round(productData.price * 100),
             },
-            unit_amount: Math.round(productData.price * 100),
-          },
-          quantity: item.quantity,
+            quantity: item.quantity,
+          })
+          return {
+            productId: item.productId,
+            name: productData.name,
+            quantity: item.quantity,
+            unitPrice: productData.price,
+          }
         })
 
-        orderItems.push({
-          productId: item.productId,
-          name: productData.name,
-          quantity: item.quantity,
-          unitPrice: productData.price,
-        })
-      }
+        for (const [productId, quantity] of quantities) {
+          const stock: number = products.get(productId)!.data()!.stock - quantity
+          tx.update(db.collection('products').doc(productId), { stock, inStock: stock > 0 })
+        }
 
-      if (deliveryMethod === 'delivery') {
-        lineItems.push({
-          price_data: {
-            currency: 'nzd',
-            product_data: { name: 'Delivery' },
-            unit_amount: DELIVERY_FEE_NZD * 100,
-          },
-          quantity: 1,
-        })
-      }
-
-      // Create the pending order under a deterministic ID derived from the
-      // client's idempotency key, so a retried request (e.g. after a network
-      // timeout) reuses the same order/session instead of creating a duplicate.
-      const orderRef = db.collection('orders').doc(idempotencyKey)
-      let existingSessionId: string | null = null
-
-      try {
-        await orderRef.create({
+        tx.create(orderRef, {
           status: 'pending',
           userEmail: userEmail || null,
           items: orderItems,
           deliveryMethod,
+          deliveryFee,
+          stockReserved: true,
           stripeSessionId: null,
           stripePaymentIntentId: null,
           createdAt: admin.firestore.FieldValue.serverTimestamp(),
           updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         })
-      } catch {
-        // Order already exists for this idempotency key - this is a retry.
-        const existing = await orderRef.get()
-        existingSessionId = existing.data()?.stripeSessionId ?? null
-      }
+        return null
+      })
 
-      if (existingSessionId) {
-        const existingSession = await stripe.checkout.sessions.retrieve(existingSessionId)
-        res.json({ url: existingSession.url })
+      if (existingOrder) {
+        if (existingOrder.status !== 'pending') {
+          // The first attempt failed (and released its stock) or has already
+          // finished; the client starts over with a fresh key.
+          res.status(500).json({ error: 'Failed to create checkout session' })
+          return
+        }
+        if (!existingOrder.sessionId) {
+          // The first request is still creating its Stripe session.
+          res.status(409).json({ error: 'Checkout is already in progress. Please try again in a moment.' })
+          return
+        }
+        const existingSession = await stripe.checkout.sessions.retrieve(existingOrder.sessionId)
+        res.json({ url: existingSession.url, orderId: orderRef.id })
         return
       }
+    } catch (error) {
+      if (error instanceof UnavailableItemError) {
+        res.status(400).json({ error: 'One or more items in your cart are unavailable' })
+        return
+      }
+      console.error('Error reserving stock for checkout:', error)
+      res.status(500).json({ error: 'Failed to create checkout session' })
+      return
+    }
 
-      const baseUrl = BASE_URL || LOCALHOST_URL
+    if (deliveryMethod === 'delivery') {
+      lineItems.push({
+        price_data: {
+          currency: 'nzd',
+          product_data: { name: 'Delivery' },
+          unit_amount: DELIVERY_FEE_NZD * 100,
+        },
+        quantity: 1,
+      })
+    }
 
-      // Create Stripe Checkout Session
-      const session = await stripe.checkout.sessions.create({
+    const baseUrl = BASE_URL || LOCALHOST_URL
+    let session: Stripe.Checkout.Session
+    try {
+      session = await stripe.checkout.sessions.create({
         mode: 'payment',
         payment_method_types: ['card'],
         line_items: lineItems,
+        // Short expiry so abandoned checkouts don't hold reserved stock for
+        // Stripe's default 24h. A minute of slack over Stripe's 30-minute minimum.
+        expires_at: Math.floor(Date.now() / 1000) + RESERVATION_SECONDS,
         success_url: `${baseUrl}/success?order_id=${orderRef.id}&session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${baseUrl}/`,
         ...(userEmail && { customer_email: userEmail }),
@@ -190,17 +223,27 @@ export const createCheckoutSession = onRequest(
           deliveryMethod,
         },
       }, { idempotencyKey })
+    } catch (error) {
+      console.error('Error creating checkout session:', error)
+      // No session means no way to pay, so hand the reserved stock back.
+      await releasePendingOrder(db, orderRef).catch((releaseError) =>
+        console.error(`Failed to release stock for order ${orderRef.id}:`, releaseError)
+      )
+      res.status(500).json({ error: 'Failed to create checkout session' })
+      return
+    }
 
-      // Update order with Stripe session ID
+    try {
       await orderRef.update({
         stripeSessionId: session.id,
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       })
-
-      res.json({ url: session.url })
     } catch (error) {
-      console.error('Error creating checkout session:', error)
-      res.status(500).json({ error: 'Failed to create checkout session' })
+      // The session is live and the webhook finds the order via metadata, so
+      // the customer can still pay - just log it.
+      console.error(`Failed to record session ${session.id} on order ${orderRef.id}:`, error)
     }
+
+    res.json({ url: session.url, orderId: orderRef.id })
   }
 )

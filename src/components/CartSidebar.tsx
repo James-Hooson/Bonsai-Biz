@@ -1,5 +1,6 @@
 import React from 'react'
 import { X, Package, Truck } from 'lucide-react'
+import { CheckoutResponseError } from '../types'
 import type { CartItem } from '../types'
 import { Blossom } from './Ornaments'
 
@@ -37,6 +38,11 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Checkout failed'
       console.error('Checkout error:', err)
+      // The server finished with this key (409 means it's still working on it),
+      // so a fresh attempt needs a fresh key.
+      if (err instanceof CheckoutResponseError && err.status !== 409) {
+        idempotencyKeyRef.current = crypto.randomUUID()
+      }
       setError(message)
       setIsCheckingOut(false)
     }

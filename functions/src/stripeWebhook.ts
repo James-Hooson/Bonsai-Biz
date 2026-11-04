@@ -2,12 +2,15 @@ import { onRequest } from 'firebase-functions/v2/https'
 import { defineSecret } from 'firebase-functions/params'
 import * as admin from 'firebase-admin'
 import Stripe from 'stripe'
+import { GMAIL_APP_PASSWORD } from './email'
+import { sendOrderEmails, type CompletedOrder } from './orderEmails'
+import { releasePendingOrder } from './orderStock'
 
 const STRIPE_SECRET_KEY = defineSecret('STRIPE_SECRET_KEY')
 const STRIPE_WEBHOOK_SECRET = defineSecret('STRIPE_WEBHOOK_SECRET')
 
 export const stripeWebhook = onRequest(
-  { secrets: [STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET] },
+  { secrets: [STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, GMAIL_APP_PASSWORD] },
   async (req, res) => {
     const stripe = new Stripe(STRIPE_SECRET_KEY.value())
     const sig = req.headers['stripe-signature'] as string
@@ -73,24 +76,31 @@ export const stripeWebhook = onRequest(
 
           // Stripe redelivers webhook events at-least-once. Atomically flip
           // status to 'completed' only once, so a duplicate delivery can't
-          // deduct stock twice for the same order.
-          const orderItems = await db.runTransaction(async (tx) => {
+          // deduct stock or send emails twice for the same order.
+          const completed = await db.runTransaction(async (tx) => {
             const snap = await tx.get(orderRef)
-            if (snap.data()?.status === 'completed') return null
+            const order = snap.data()
+            if (order?.status === 'completed') return null
             tx.update(orderRef, updateData as admin.firestore.UpdateData<admin.firestore.DocumentData>)
-            return (snap.data()?.items ?? []) as Array<{ productId: string; quantity: number }>
+            return {
+              order: { ...order, ...updateData },
+              // Stock was taken at checkout unless the order predates reservations,
+              // or its reservation was already released.
+              stockAlreadyTaken: order?.stockReserved === true && order?.status === 'pending',
+            }
           })
 
-          if (orderItems === null) {
+          if (completed === null) {
             console.log(`Order ${orderId} already completed, skipping duplicate webhook delivery`)
             res.status(200).json({ received: true })
             return
           }
           console.log(`Order ${orderId} marked as completed`)
 
+          const orderItems = (completed.order.items ?? []) as Array<{ productId: string; quantity: number }>
           // Deduct stock for each purchased item
           await Promise.all(
-            orderItems.map(async (item) => {
+            (completed.stockAlreadyTaken ? [] : orderItems).map(async (item) => {
               const productRef = db.collection('products').doc(item.productId)
               await db.runTransaction(async (tx) => {
                 const productSnap = await tx.get(productRef)
@@ -104,14 +114,25 @@ export const stripeWebhook = onRequest(
               })
             }),
           )
+
+          const deliveryMethod = completed.order.deliveryMethod === 'delivery' ? 'delivery' : 'pickup'
+          await sendOrderEmails({
+            ...(completed.order as Omit<CompletedOrder, 'id'>),
+            id: orderId,
+            userEmail: (completed.order.userEmail as string | null) ?? null,
+            deliveryMethod,
+            // Orders created before deliveryFee was stored charged the flat $15.
+            deliveryFee: (completed.order.deliveryFee as number | undefined) ?? (deliveryMethod === 'delivery' ? 15 : 0),
+          })
         } catch (error) {
           console.error(`Failed to update order ${orderId}:`, error)
         }
       }
     }
 
-    // Stripe expires an unpaid Checkout Session ~24h after creation and fires
-    // this event. Mark the abandoned order so it doesn't sit as 'pending' forever.
+    // Stripe expires an unpaid Checkout Session (30 minutes after creation, see
+    // createCheckoutSession) and fires this event. Mark the abandoned order so it
+    // doesn't sit as 'pending' forever, and return the stock it reserved.
     if (event.type === 'checkout.session.expired') {
       const session = event.data.object as Stripe.Checkout.Session
       const orderId = session.metadata?.orderId
@@ -120,15 +141,9 @@ export const stripeWebhook = onRequest(
         try {
           const db = admin.firestore()
           const orderRef = db.collection('orders').doc(orderId)
-          await db.runTransaction(async (tx) => {
-            const snap = await tx.get(orderRef)
-            if (snap.data()?.status !== 'pending') return
-            tx.update(orderRef, {
-              status: 'expired',
-              updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-            })
-          })
-          console.log(`Order ${orderId} marked as expired`)
+          if (await releasePendingOrder(db, orderRef)) {
+            console.log(`Order ${orderId} marked as expired`)
+          }
         } catch (error) {
           console.error(`Failed to mark order ${orderId} as expired:`, error)
         }

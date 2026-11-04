@@ -5,6 +5,11 @@ const mocks = vi.hoisted(() => ({
   firestoreRef: { current: null as unknown as FakeFirestore },
   constructEventMock: vi.fn(),
   retrieveSessionMock: vi.fn(),
+  sendMailMock: vi.fn(),
+}))
+
+vi.mock('nodemailer', () => ({
+  default: { createTransport: () => ({ sendMail: mocks.sendMailMock }) },
 }))
 
 vi.mock('firebase-functions/v2/https', () => ({
@@ -88,7 +93,30 @@ beforeEach(() => {
     customer_details: { email: 'buyer@example.com' },
     shipping_details: null,
   })
+  mocks.sendMailMock.mockResolvedValue({})
 })
+
+const completedEvent = {
+  type: 'checkout.session.completed',
+  data: { object: { id: 'cs_test_1', metadata: { orderId: 'order-1' } } },
+}
+
+function seedReservedOrder(order: Record<string, unknown> = {}) {
+  mocks.firestoreRef.current = createFakeFirestore({
+    orders: {
+      'order-1': {
+        status: 'pending',
+        stockReserved: true,
+        deliveryMethod: 'pickup',
+        deliveryFee: 0,
+        items: [{ productId: 'juniper', name: 'Juniper Bonsai', quantity: 2, unitPrice: 40 }],
+        ...order,
+      },
+    },
+    // Stock already reduced from 5 by the checkout's reservation.
+    products: { juniper: { name: 'Juniper Bonsai', stock: 3, inStock: true } },
+  })
+}
 
 describe('stripeWebhook', () => {
   it('rejects requests with no raw body', async () => {
@@ -107,7 +135,7 @@ describe('stripeWebhook', () => {
     expect(res.body).toContain('bad signature')
   })
 
-  it('marks the order completed and deducts stock on checkout.session.completed', async () => {
+  it('marks the order completed and deducts stock for an order placed before stock reservations', async () => {
     mocks.constructEventMock.mockReturnValue({
       type: 'checkout.session.completed',
       data: { object: { id: 'cs_test_1', metadata: { orderId: 'order-1' } } },
@@ -148,6 +176,61 @@ describe('stripeWebhook', () => {
     expect(mocks.firestoreRef.current.store.products.juniper.stock).toBe(3)
   })
 
+  it('does not deduct stock again for an order that reserved it at checkout', async () => {
+    seedReservedOrder()
+    mocks.constructEventMock.mockReturnValue(completedEvent)
+
+    await stripeWebhook(createMockRequest() as never, createMockResponse() as never)
+
+    expect(mocks.firestoreRef.current.store.orders['order-1'].status).toBe('completed')
+    expect(mocks.firestoreRef.current.store.products.juniper.stock).toBe(3)
+  })
+
+  it('emails the shop and the customer once, even when the event is redelivered', async () => {
+    seedReservedOrder()
+    mocks.constructEventMock.mockReturnValue(completedEvent)
+
+    await stripeWebhook(createMockRequest() as never, createMockResponse() as never)
+    await stripeWebhook(createMockRequest() as never, createMockResponse() as never)
+
+    expect(mocks.sendMailMock).toHaveBeenCalledTimes(2)
+    const recipients = mocks.sendMailMock.mock.calls.map(([mail]) => mail.to)
+    expect(recipients).toEqual(expect.arrayContaining(['zenoasisnz@gmail.com', 'buyer@example.com']))
+  })
+
+  it('includes the delivery fee and address in the order emails', async () => {
+    seedReservedOrder({ deliveryMethod: 'delivery', deliveryFee: 15 })
+    mocks.retrieveSessionMock.mockResolvedValue({
+      id: 'cs_test_1',
+      payment_intent: 'pi_test_1',
+      customer_details: { email: 'buyer@example.com' },
+      shipping_details: {
+        name: 'Jane Doe',
+        address: { line1: '123 Fern St', line2: null, city: 'Auckland', state: null, postal_code: '1010', country: 'NZ' },
+      },
+    })
+    mocks.constructEventMock.mockReturnValue(completedEvent)
+
+    await stripeWebhook(createMockRequest() as never, createMockResponse() as never)
+
+    const customerMail = mocks.sendMailMock.mock.calls.map(([mail]) => mail).find((m) => m.to === 'buyer@example.com')
+    expect(customerMail.text).toContain('Delivery  $15.00')
+    expect(customerMail.text).toContain('Total (NZD)  $95.00')
+    expect(customerMail.text).toContain('123 Fern St')
+  })
+
+  it('still completes the order when sending email fails', async () => {
+    seedReservedOrder()
+    mocks.sendMailMock.mockRejectedValue(new Error('SMTP down'))
+    mocks.constructEventMock.mockReturnValue(completedEvent)
+
+    const res = createMockResponse()
+    await stripeWebhook(createMockRequest() as never, res as never)
+
+    expect(res.statusCode).toBe(200)
+    expect(mocks.firestoreRef.current.store.orders['order-1'].status).toBe('completed')
+  })
+
   it('records shipping details when present', async () => {
     mocks.retrieveSessionMock.mockResolvedValue({
       id: 'cs_test_1',
@@ -181,6 +264,20 @@ describe('stripeWebhook', () => {
 
     expect(res.statusCode).toBe(200)
     expect(mocks.firestoreRef.current.store.orders['order-1'].status).toBe('expired')
+  })
+
+  it('returns reserved stock when a checkout session expires, but only once', async () => {
+    seedReservedOrder()
+    mocks.constructEventMock.mockReturnValue({
+      type: 'checkout.session.expired',
+      data: { object: { metadata: { orderId: 'order-1' } } },
+    })
+
+    await stripeWebhook(createMockRequest() as never, createMockResponse() as never)
+    await stripeWebhook(createMockRequest() as never, createMockResponse() as never)
+
+    expect(mocks.firestoreRef.current.store.orders['order-1'].status).toBe('expired')
+    expect(mocks.firestoreRef.current.store.products.juniper).toMatchObject({ stock: 5, inStock: true })
   })
 
   it('does not overwrite an already-completed order on a stray checkout.session.expired', async () => {

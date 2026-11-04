@@ -146,7 +146,7 @@ describe('createCheckoutSession', () => {
       res as never
     )
 
-    expect(res.body).toEqual({ url: 'https://stripe.test/pay/cs_test_123' })
+    expect(res.body).toEqual({ url: 'https://stripe.test/pay/cs_test_123', orderId: 'key-1' })
     expect(mocks.createSessionMock).toHaveBeenCalledTimes(1)
 
     const [sessionParams] = mocks.createSessionMock.mock.calls[0]
@@ -162,7 +162,85 @@ describe('createCheckoutSession', () => {
       status: 'pending',
       userEmail: 'buyer@example.com',
       stripeSessionId: 'cs_test_123',
+      deliveryFee: 0,
+      stockReserved: true,
     })
+  })
+
+  it('reserves stock as soon as the checkout session is created', async () => {
+    const res = createMockResponse()
+    await createCheckoutSession(
+      { method: 'POST', body: { items: [{ productId: 'juniper', quantity: 2 }], idempotencyKey: 'key-1' } } as never,
+      res as never
+    )
+
+    expect(mocks.firestoreRef.current.store.products.juniper).toMatchObject({ stock: 3, inStock: true })
+  })
+
+  it('does not let a second customer check out the last item while it is reserved', async () => {
+    seedFirestore({ juniper: { ...JUNIPER, stock: 1 } })
+    const items = [{ productId: 'juniper', quantity: 1 }]
+
+    const res1 = createMockResponse()
+    await createCheckoutSession({ method: 'POST', body: { items, idempotencyKey: 'first' } } as never, res1 as never)
+    const res2 = createMockResponse()
+    await createCheckoutSession({ method: 'POST', body: { items, idempotencyKey: 'second' } } as never, res2 as never)
+
+    expect(res1.statusCode).toBe(200)
+    expect(res2.statusCode).toBe(400)
+    expect(mocks.createSessionMock).toHaveBeenCalledTimes(1)
+    expect(mocks.firestoreRef.current.store.products.juniper).toMatchObject({ stock: 0, inStock: false })
+    expect(mocks.firestoreRef.current.store.orders.second).toBeUndefined()
+  })
+
+  it('checks stock against the combined quantity when a product appears on several lines', async () => {
+    const res = createMockResponse()
+    const items = [
+      { productId: 'juniper', quantity: 3 },
+      { productId: 'juniper', quantity: 3 },
+    ]
+    await createCheckoutSession({ method: 'POST', body: { items, idempotencyKey: 'key-1' } } as never, res as never)
+
+    expect(res.statusCode).toBe(400)
+    expect(mocks.firestoreRef.current.store.products.juniper.stock).toBe(5)
+  })
+
+  it('sets the Stripe session to expire after about half an hour', async () => {
+    const res = createMockResponse()
+    const now = Math.floor(Date.now() / 1000)
+    await createCheckoutSession(
+      { method: 'POST', body: { items: [{ productId: 'juniper', quantity: 1 }], idempotencyKey: 'key-1' } } as never,
+      res as never
+    )
+
+    const [sessionParams] = mocks.createSessionMock.mock.calls[0]
+    expect(sessionParams.expires_at - now).toBeGreaterThanOrEqual(30 * 60)
+    expect(sessionParams.expires_at - now).toBeLessThanOrEqual(32 * 60)
+  })
+
+  it('returns the reserved stock when Stripe fails to create the session', async () => {
+    mocks.createSessionMock.mockRejectedValue(new Error('Stripe is down'))
+    const res = createMockResponse()
+    await createCheckoutSession(
+      { method: 'POST', body: { items: [{ productId: 'juniper', quantity: 2 }], idempotencyKey: 'key-1' } } as never,
+      res as never
+    )
+
+    expect(res.statusCode).toBe(500)
+    expect(mocks.firestoreRef.current.store.products.juniper.stock).toBe(5)
+    expect(mocks.firestoreRef.current.store.orders['key-1'].status).toBe('expired')
+  })
+
+  it('tells a retry of a failed attempt to start over rather than to wait', async () => {
+    mocks.createSessionMock.mockRejectedValueOnce(new Error('Stripe is down'))
+    const body = { items: [{ productId: 'juniper', quantity: 1 }], idempotencyKey: 'key-1' }
+
+    await createCheckoutSession({ method: 'POST', body } as never, createMockResponse() as never)
+    const res = createMockResponse()
+    await createCheckoutSession({ method: 'POST', body } as never, res as never)
+
+    expect(res.statusCode).toBe(500)
+    expect(mocks.createSessionMock).toHaveBeenCalledTimes(1)
   })
 
   it('adds a delivery line item and shipping collection when deliveryMethod is delivery', async () => {
@@ -176,6 +254,7 @@ describe('createCheckoutSession', () => {
     const [sessionParams] = mocks.createSessionMock.mock.calls[0]
     expect(sessionParams.line_items).toHaveLength(2)
     expect(sessionParams.shipping_address_collection).toEqual({ allowed_countries: ['NZ'] })
+    expect(mocks.firestoreRef.current.store.orders['key-delivery'].deliveryFee).toBe(15)
   })
 
   it('is idempotent: a retry with the same key reuses the existing session instead of creating a new one', async () => {
@@ -199,7 +278,7 @@ describe('createCheckoutSession', () => {
     // No second Stripe Checkout Session should be created for the same idempotency key.
     expect(mocks.createSessionMock).toHaveBeenCalledTimes(1)
     expect(mocks.retrieveSessionMock).toHaveBeenCalledWith('cs_test_123')
-    expect(res2.body).toEqual({ url: 'https://stripe.test/pay/cs_test_123' })
+    expect(res2.body).toEqual({ url: 'https://stripe.test/pay/cs_test_123', orderId: 'retry-key' })
   })
 
   it('falls back to a generated key when the client idempotency key is malformed', async () => {

@@ -11,7 +11,7 @@ import {
 } from 'firebase/firestore'
 import { db } from '../firebase'
 import { Link, useSearchParams } from 'react-router-dom'
-import { ADMIN_EMAILS } from '../types'
+import { ADMIN_EMAILS, CheckoutResponseError, PENDING_CHECKOUT_KEY } from '../types'
 import type { Product, CartItem, PageProps } from '../types'
 import { AdminPanel } from './AdminPanel'
 import { CartSidebar } from './CartSidebar'
@@ -83,7 +83,30 @@ export const Shop: React.FC<PageProps> = ({
         setLoading(false)
       }
     }
-    loadProducts()
+
+    // Back from Stripe without paying: release that checkout's reserved stock
+    // before loading products, so the customer's own items aren't shown sold out.
+    const cancelPendingCheckout = async () => {
+      let orderId: string | null = null
+      try {
+        orderId = sessionStorage.getItem(PENDING_CHECKOUT_KEY)
+        sessionStorage.removeItem(PENDING_CHECKOUT_KEY)
+      } catch {
+        // Storage unavailable; the reservation expires on its own.
+      }
+      if (!orderId) return
+      try {
+        await fetch(`${import.meta.env.VITE_FUNCTIONS_BASE_URL}/cancelCheckout`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orderId }),
+        })
+      } catch (err) {
+        console.error('Failed to cancel pending checkout:', err)
+      }
+    }
+
+    cancelPendingCheckout().then(loadProducts)
   }, [])
 
   // Product Management
@@ -173,10 +196,15 @@ export const Shop: React.FC<PageProps> = ({
 
     if (!response.ok) {
       const error = await response.json()
-      throw new Error(error.error || 'Failed to create checkout session')
+      throw new CheckoutResponseError(error.error || 'Failed to create checkout session', response.status)
     }
 
-    const { url } = await response.json()
+    const { url, orderId } = await response.json()
+    try {
+      sessionStorage.setItem(PENDING_CHECKOUT_KEY, orderId)
+    } catch {
+      // Storage unavailable; the reservation expires on its own.
+    }
     window.location.href = url
   }
 

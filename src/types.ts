@@ -25,3 +25,17 @@ export interface Product {
 export interface CartItem extends Product {
   quantity: number
 }
+
+// The functions server answered checkout with an error (as opposed to the
+// request never getting there).
+export class CheckoutResponseError extends Error {
+  readonly status: number
+  constructor(message: string, status: number) {
+    super(message)
+    this.status = status
+  }
+}
+
+// Order ID of a checkout this tab sent to Stripe and hasn't seen paid. Stripe
+// sessions hold reserved stock, so returning to the shop without paying cancels it.
+export const PENDING_CHECKOUT_KEY = 'pendingCheckoutOrderId'

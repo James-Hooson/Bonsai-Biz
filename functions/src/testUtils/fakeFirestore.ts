@@ -1,6 +1,6 @@
 // Minimal in-memory stand-in for the pieces of the Admin Firestore SDK that
-// createCheckoutSession.ts / stripeWebhook.ts actually use: doc get/create/update
-// and single-document transactions. Not a general-purpose Firestore emulator.
+// the order/checkout functions actually use: doc get/create/update
+// and transactions (applied immediately, with no rollback). Not a general-purpose Firestore emulator.
 
 export interface FakeDocRef {
   id: string
@@ -13,6 +13,7 @@ export interface FakeDocRef {
 
 export interface FakeTransaction {
   get(ref: FakeDocRef): Promise<{ exists: boolean; data: () => Record<string, unknown> | undefined }>
+  create(ref: FakeDocRef, data: Record<string, unknown>): void
   update(ref: FakeDocRef, data: Record<string, unknown>): void
   set(ref: FakeDocRef, data: Record<string, unknown>): void
 }
@@ -58,6 +59,13 @@ export function createFakeFirestore(seed: Record<string, Record<string, Record<s
     async runTransaction<T>(fn: (tx: FakeTransaction) => Promise<T>): Promise<T> {
       const tx: FakeTransaction = {
         get: (ref) => ref.get(),
+        create: (ref, data) => {
+          const coll = getCollection(ref.collectionName)
+          if (coll[ref.id] !== undefined) {
+            throw new Error('ALREADY_EXISTS: document already exists')
+          }
+          coll[ref.id] = { ...data }
+        },
         update: (ref, data) => {
           const coll = getCollection(ref.collectionName)
           coll[ref.id] = { ...(coll[ref.id] ?? {}), ...data }

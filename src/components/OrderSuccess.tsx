@@ -7,7 +7,9 @@ import { Check, AlertCircle, Clock } from 'lucide-react'
 import { Footer } from './Footer'
 import { Enso, Seal } from './Ornaments'
 
+import { PENDING_CHECKOUT_KEY } from '../types'
 import type { PageProps } from '../types'
+import { DELIVERY_FEE } from './CartSidebar'
 
 interface OrderItem {
   productId: string
@@ -20,6 +22,8 @@ interface Order {
   status: 'pending' | 'completed' | 'expired'
   userEmail: string
   items: OrderItem[]
+  deliveryMethod?: 'pickup' | 'delivery'
+  deliveryFee?: number
   stripeSessionId: string | null
   stripePaymentIntentId: string | null
 }
@@ -38,6 +42,15 @@ export const OrderSuccess: React.FC<PageProps> = ({
     orderId ? null : 'Order ID not found'
   )
   const loading = !!orderId && isAuthenticated && !order && !error
+
+  useEffect(() => {
+    // Paid, so there's nothing for the shop to cancel on the way back.
+    try {
+      sessionStorage.removeItem(PENDING_CHECKOUT_KEY)
+    } catch {
+      // Storage unavailable; nothing to clear.
+    }
+  }, [])
 
   useEffect(() => {
     if (!orderId || !isAuthenticated || !firebaseReady) return
@@ -60,9 +73,14 @@ export const OrderSuccess: React.FC<PageProps> = ({
     return () => unsubscribe()
   }, [orderId, isAuthenticated, firebaseReady])
 
+  // Orders created before deliveryFee was stored charged the flat fee.
+  const deliveryFee =
+    order?.deliveryFee ?? (order?.deliveryMethod === 'delivery' ? DELIVERY_FEE : 0)
   const orderTotal = useMemo(
-    () => order?.items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0),
-    [order],
+    () =>
+      order &&
+      order.items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0) + deliveryFee,
+    [order, deliveryFee],
   )
 
   if (isLoading) {
@@ -131,7 +149,8 @@ export const OrderSuccess: React.FC<PageProps> = ({
                 <p className="eyebrow mb-4">Receipt</p>
                 <h1 className="text-headline text-sumi mb-2">Order Confirmed!</h1>
                 <p className="text-sumi-soft">
-                  Thank you for your purchase. Your order has been received.
+                  Thank you for your purchase. Your order has been received
+                  {order?.userEmail ? ` and a confirmation has been sent to ${order.userEmail}.` : '.'}
                 </p>
               </div>
               <Seal className="w-16 h-16 shrink-0 -rotate-6">
@@ -158,6 +177,12 @@ export const OrderSuccess: React.FC<PageProps> = ({
                     </span>
                   </li>
                 ))}
+                {deliveryFee > 0 && (
+                  <li className="flex justify-between items-baseline py-3">
+                    <span className="font-display text-lg text-sumi">Delivery</span>
+                    <span className="text-sumi">${deliveryFee.toFixed(2)}</span>
+                  </li>
+                )}
               </ul>
               <div className="border-t-2 border-double border-sumi mt-2 pt-4 flex justify-between items-baseline">
                 <span className="font-display text-xl text-sumi">Total</span>

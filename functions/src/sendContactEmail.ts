@@ -1,12 +1,6 @@
 import { onRequest } from 'firebase-functions/v2/https'
-import { defineSecret } from 'firebase-functions/params'
 import * as admin from 'firebase-admin'
-import nodemailer from 'nodemailer'
-
-const GMAIL_APP_PASSWORD = defineSecret('GMAIL_APP_PASSWORD')
-
-const SENDER_EMAIL = 'jmhooson48@gmail.com'
-const RECIPIENT_EMAIL = 'zenoasisnz@gmail.com'
+import { createMailTransport, GMAIL_APP_PASSWORD, SENDER_EMAIL, SHOP_EMAIL } from './email'
 
 const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000
 const RATE_LIMIT_MAX_REQUESTS = 5
@@ -79,18 +73,12 @@ export const sendContactEmail = onRequest(
       return
     }
 
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: SENDER_EMAIL,
-        pass: GMAIL_APP_PASSWORD.value(),
-      },
-    })
+    const transporter = createMailTransport()
 
     try {
       await transporter.sendMail({
         from: `Zen Oasis Contact Form <${SENDER_EMAIL}>`,
-        to: RECIPIENT_EMAIL,
+        to: SHOP_EMAIL,
         replyTo: email,
         subject: `Contact form: ${subject?.trim() || 'New message'}`,
         text: `From: ${name} <${email}>\n\n${message}`,
