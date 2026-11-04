@@ -131,6 +131,16 @@ export const Contact: React.FC<PageProps> = ({
                 <Send aria-hidden="true" className="w-4 h-4" />
                 {submitting ? 'Sending...' : 'Send Message'}
               </button>
+              <p className="text-sm text-sumi-soft">
+                We'll only use your details to reply to you. See our{' '}
+                <Link
+                  to="/privacy"
+                  className="text-shu hover:text-shu-deep underline decoration-shu/30 underline-offset-4"
+                >
+                  Privacy Policy
+                </Link>
+                .
+              </p>
             </form>
           </section>
 

@@ -59,6 +59,9 @@ export const Footer: React.FC = () => (
           <Link to="/terms" className="hover:text-yamabuki transition underline-offset-4 hover:underline">
             Terms &amp; Conditions
           </Link>
+          <Link to="/privacy" className="hover:text-yamabuki transition underline-offset-4 hover:underline">
+            Privacy Policy
+          </Link>
         </span>
         <span className="flex items-center gap-3 uppercase tracking-[0.3em]">
           <Blossom centre={false} className="w-3 h-3 text-sakura" />

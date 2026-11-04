@@ -1,17 +1,11 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { Header } from './Header'
-import { PageHero } from './PageHero'
-import { Footer } from './Footer'
+import { LegalPage, inlineLink, type LegalSection } from './LegalPage'
 import type { PageProps } from '../types'
 
 const LAST_UPDATED = '4 November 2026'
 
-const inlineLink =
-  'text-shu hover:text-shu-deep font-medium underline decoration-shu/30 underline-offset-4'
-
-// Fixed legal text: edit here (not through the admin editor) so changes are reviewed in code.
-const sections: { title: string; body: React.ReactNode }[] = [
+const sections: LegalSection[] = [
   {
     title: 'About us',
     body: (
@@ -170,7 +164,15 @@ const sections: { title: string; body: React.ReactNode }[] = [
   },
   {
     title: 'Privacy',
-    body: <p>We handle your personal information as described in our Privacy Policy.</p>,
+    body: (
+      <p>
+        We handle your personal information as described in our{' '}
+        <Link to="/privacy" className={inlineLink}>
+          Privacy Policy
+        </Link>
+        .
+      </p>
+    ),
   },
   {
     title: 'Changes to these terms',
@@ -193,33 +195,15 @@ const sections: { title: string; body: React.ReactNode }[] = [
 ]
 
 export const Terms: React.FC<PageProps> = ({ user, isAuthenticated, onLogout }) => (
-  <div className="min-h-screen flex flex-col">
-    <Header user={isAuthenticated ? user : null} onLogout={onLogout} />
-
-    <PageHero
-      eyebrow="Ordering · Delivery · Returns"
-      title="Terms & Conditions"
-      lede={`Last updated: ${LAST_UPDATED}`}
-    />
-
-    <main className="flex-1 max-w-page w-full mx-auto px-gutter py-20">
-      <ol className="max-w-3xl border-t border-sumi">
-        {sections.map(({ title, body }, i) => (
-          <li key={title} className="py-10 border-b border-rule">
-            <h2 className="text-headline text-sumi mb-4">
-              <span aria-hidden="true" className="font-display text-rule mr-4">
-                {String(i + 1).padStart(2, '0')}
-              </span>
-              {title}
-            </h2>
-            <div className="space-y-4 text-sumi-soft leading-relaxed">{body}</div>
-          </li>
-        ))}
-      </ol>
-    </main>
-
-    <Footer />
-  </div>
+  <LegalPage
+    user={user}
+    isAuthenticated={isAuthenticated}
+    onLogout={onLogout}
+    eyebrow="Ordering · Delivery · Returns"
+    title="Terms & Conditions"
+    lastUpdated={LAST_UPDATED}
+    sections={sections}
+  />
 )
 
 export default Terms
