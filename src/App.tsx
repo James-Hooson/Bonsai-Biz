@@ -11,6 +11,7 @@ const CareGuide = lazy(() => import('./components/CareGuide').then(m => ({ defau
 const Aquascaping = lazy(() => import('./components/Aquascaping').then(m => ({ default: m.Aquascaping })))
 const Contact = lazy(() => import('./components/Contact').then(m => ({ default: m.Contact })))
 const OrderSuccess = lazy(() => import('./components/OrderSuccess').then(m => ({ default: m.OrderSuccess })))
+const Terms = lazy(() => import('./components/Terms').then(m => ({ default: m.Terms })))
 
 const AdminLogin: React.FC = () => {
   const { loginWithRedirect, isAuthenticated, isLoading } = useAuth0()
@@ -74,6 +75,7 @@ const App: React.FC = () => {
           <Route path="/aquascaping" element={<Aquascaping {...authProps} />} />
           <Route path="/contact" element={<Contact {...authProps} />} />
           <Route path="/success" element={<OrderSuccess {...authProps} />} />
+          <Route path="/terms" element={<Terms {...authProps} />} />
           <Route path="/admin" element={<AdminLogin />} />
         </Routes>
       </Suspense>

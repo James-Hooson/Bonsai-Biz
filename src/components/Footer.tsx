@@ -54,7 +54,12 @@ export const Footer: React.FC = () => (
       </div>
 
       <div className="mt-14 pt-6 border-t border-on-ai/20 flex flex-wrap items-center justify-between gap-4 text-xs text-on-ai-soft">
-        <span>© {new Date().getFullYear()} Zen Oasis · Aotearoa New Zealand</span>
+        <span className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <span>© {new Date().getFullYear()} Zen Oasis · Aotearoa New Zealand</span>
+          <Link to="/terms" className="hover:text-yamabuki transition underline-offset-4 hover:underline">
+            Terms &amp; Conditions
+          </Link>
+        </span>
         <span className="flex items-center gap-3 uppercase tracking-[0.3em]">
           <Blossom centre={false} className="w-3 h-3 text-sakura" />
           Bonsai · Aquascape
