@@ -137,7 +137,7 @@ export const About: React.FC<PageProps> = ({
               </EditableText>
               <div className="space-y-4 text-sumi-soft">
                 <EditableText field="story1" as="p" multiline>
-                  Founded in 2023, ZenBonsai began with a simple vision: to make
+                  Founded in 2023, ZenOasis began with a simple vision: to make
                   the art of bonsai accessible to everyone. What started as a
                   small collection has grown into a comprehensive marketplace
                   offering trees for every skill level.
