@@ -1,6 +1,6 @@
 import { onRequest } from 'firebase-functions/v2/https'
 import { defineSecret } from 'firebase-functions/params'
-import * as admin from 'firebase-admin'
+import { getFirestore, FieldValue } from 'firebase-admin/firestore'
 import Stripe from 'stripe'
 import { randomUUID } from 'node:crypto'
 import { quantitiesByProduct, releasePendingOrder } from './orderStock'
@@ -78,7 +78,7 @@ export const createCheckoutSession = onRequest(
     }
 
     const stripe = new Stripe(STRIPE_SECRET_KEY.value())
-    const db = admin.firestore()
+    const db = getFirestore()
 
     // Stock is reserved (deducted) here, when the order is created, rather than
     // when payment completes - otherwise two customers could both be sent to
@@ -161,8 +161,8 @@ export const createCheckoutSession = onRequest(
           stockReserved: true,
           stripeSessionId: null,
           stripePaymentIntentId: null,
-          createdAt: admin.firestore.FieldValue.serverTimestamp(),
-          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          createdAt: FieldValue.serverTimestamp(),
+          updatedAt: FieldValue.serverTimestamp(),
         })
         return null
       })
@@ -242,7 +242,7 @@ export const createCheckoutSession = onRequest(
     try {
       await orderRef.update({
         stripeSessionId: session.id,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
       })
     } catch (error) {
       // The session is live and the webhook finds the order via metadata, so

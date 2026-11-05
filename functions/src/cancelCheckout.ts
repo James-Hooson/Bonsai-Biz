@@ -1,6 +1,6 @@
 import { onRequest } from 'firebase-functions/v2/https'
 import { defineSecret } from 'firebase-functions/params'
-import * as admin from 'firebase-admin'
+import { getFirestore } from 'firebase-admin/firestore'
 import Stripe from 'stripe'
 import { releasePendingOrder } from './orderStock'
 
@@ -28,7 +28,7 @@ export const cancelCheckout = onRequest(
       return
     }
 
-    const db = admin.firestore()
+    const db = getFirestore()
     const orderRef = db.collection('orders').doc(orderId)
 
     try {

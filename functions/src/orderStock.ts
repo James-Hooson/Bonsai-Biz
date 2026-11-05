@@ -1,4 +1,4 @@
-import * as admin from 'firebase-admin'
+import { FieldValue, type Firestore, type DocumentReference } from 'firebase-admin/firestore'
 
 interface StockItem {
   productId: string
@@ -20,8 +20,8 @@ export function quantitiesByProduct(items: StockItem[]): Map<string, number> {
 // returns stock, so a Stripe expiry webhook arriving after an explicit cancel
 // (or a redelivered webhook) can't return it twice. Returns whether it did so.
 export async function releasePendingOrder(
-  db: admin.firestore.Firestore,
-  orderRef: admin.firestore.DocumentReference,
+  db: Firestore,
+  orderRef: DocumentReference,
 ): Promise<boolean> {
   return db.runTransaction(async (tx) => {
     const orderSnap = await tx.get(orderRef)
@@ -36,7 +36,7 @@ export async function releasePendingOrder(
 
     tx.update(orderRef, {
       status: 'expired',
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
     })
     productSnaps.forEach((snap, i) => {
       if (!snap.exists) return

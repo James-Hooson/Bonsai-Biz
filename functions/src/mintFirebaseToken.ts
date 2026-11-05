@@ -1,5 +1,5 @@
 import { onRequest } from 'firebase-functions/v2/https'
-import * as admin from 'firebase-admin'
+import { getAuth } from 'firebase-admin/auth'
 import jwt, { type JwtHeader, type SigningKeyCallback } from 'jsonwebtoken'
 import jwksClient from 'jwks-rsa'
 
@@ -70,7 +70,7 @@ export const mintFirebaseToken = onRequest({ cors: true }, async (req, res) => {
       return
     }
 
-    const firebaseToken = await admin.auth().createCustomToken(payload.sub, {
+    const firebaseToken = await getAuth().createCustomToken(payload.sub, {
       email: payload.email,
     })
 

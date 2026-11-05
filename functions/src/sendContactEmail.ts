@@ -1,5 +1,5 @@
 import { onRequest } from 'firebase-functions/v2/https'
-import * as admin from 'firebase-admin'
+import { getFirestore, FieldValue } from 'firebase-admin/firestore'
 import { createMailTransport, GMAIL_APP_PASSWORD, SENDER_EMAIL, SHOP_EMAIL } from './email'
 
 const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000
@@ -19,7 +19,7 @@ function isNonEmptyString(value: unknown, maxLength: number): value is string {
 // Per-IP sliding-window limiter backed by Firestore so it holds across
 // Cloud Functions instances (an in-memory counter wouldn't).
 async function checkRateLimit(ip: string): Promise<boolean> {
-  const db = admin.firestore()
+  const db = getFirestore()
   const rateLimitRef = db.collection('rateLimits').doc(`contact_${ip}`)
   const now = Date.now()
 
@@ -36,7 +36,7 @@ async function checkRateLimit(ip: string): Promise<boolean> {
       return false
     }
 
-    tx.update(rateLimitRef, { count: admin.firestore.FieldValue.increment(1) })
+    tx.update(rateLimitRef, { count: FieldValue.increment(1) })
     return true
   })
 }

@@ -1,6 +1,6 @@
 import { onRequest } from 'firebase-functions/v2/https'
 import { defineSecret } from 'firebase-functions/params'
-import * as admin from 'firebase-admin'
+import { getFirestore, FieldValue, type Firestore, type UpdateData, type DocumentData } from 'firebase-admin/firestore'
 import Stripe from 'stripe'
 import { GMAIL_APP_PASSWORD } from './email'
 import { sendOrderEmails, type CompletedOrder } from './orderEmails'
@@ -15,7 +15,7 @@ const STRIPE_WEBHOOK_SECRET = defineSecret('STRIPE_WEBHOOK_SECRET')
 // if there was nothing to do (already completed, or not actually paid yet).
 async function completeOrder(
   stripe: Stripe,
-  db: admin.firestore.Firestore,
+  db: Firestore,
   sessionId: string,
   orderId: string,
 ): Promise<Record<string, unknown> | null> {
@@ -34,7 +34,7 @@ async function completeOrder(
   const updateData: Record<string, unknown> = {
     status: 'completed',
     stripePaymentIntentId: session.payment_intent,
-    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    updatedAt: FieldValue.serverTimestamp(),
   }
   if (session.customer_details?.email) {
     updateData.userEmail = session.customer_details.email
@@ -71,7 +71,7 @@ async function completeOrder(
     const productRefs = [...quantities.keys()].map((id) => db.collection('products').doc(id))
     const productSnaps = await Promise.all(productRefs.map((ref) => tx.get(ref)))
 
-    tx.update(orderRef, updateData as admin.firestore.UpdateData<admin.firestore.DocumentData>)
+    tx.update(orderRef, updateData as UpdateData<DocumentData>)
     productSnaps.forEach((productSnap, i) => {
       if (!productSnap.exists) return
       const currentStock: number = productSnap.data()?.stock ?? 0
@@ -122,7 +122,7 @@ export const stripeWebhook = onRequest(
       if (orderId) {
         let completedOrder: Record<string, unknown> | null
         try {
-          completedOrder = await completeOrder(stripe, admin.firestore(), sessionStub.id, orderId)
+          completedOrder = await completeOrder(stripe, getFirestore(), sessionStub.id, orderId)
         } catch (error) {
           // A non-2xx response makes Stripe retry the event later, so a paid
           // order isn't left stuck as pending.
@@ -165,7 +165,7 @@ export const stripeWebhook = onRequest(
 
       if (orderId) {
         try {
-          const db = admin.firestore()
+          const db = getFirestore()
           const orderRef = db.collection('orders').doc(orderId)
           if (await releasePendingOrder(db, orderRef)) {
             console.log(`Order ${orderId} marked as expired`)

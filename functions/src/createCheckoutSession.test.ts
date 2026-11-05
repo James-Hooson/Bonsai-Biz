@@ -15,17 +15,13 @@ vi.mock('firebase-functions/params', () => ({
   defineSecret: (name: string) => ({ value: () => `test-${name}` }),
 }))
 
-vi.mock('firebase-admin', () => {
-  const FieldValue = {
+vi.mock('firebase-admin/firestore', () => ({
+  getFirestore: () => mocks.firestoreRef.current,
+  FieldValue: {
     serverTimestamp: () => '__SERVER_TIMESTAMP__',
     increment: (n: number) => ({ __increment: n }),
-  }
-  const firestoreFn = Object.assign(() => mocks.firestoreRef.current, { FieldValue })
-  return {
-    initializeApp: vi.fn(),
-    firestore: firestoreFn,
-  }
-})
+  },
+}))
 
 vi.mock('stripe', () => ({
   // `new Stripe(...)` requires a real constructor — an arrow-function

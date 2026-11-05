@@ -14,11 +14,13 @@ vi.mock('firebase-functions/params', () => ({
   defineSecret: (name: string) => ({ value: () => `test-${name}` }),
 }))
 
-vi.mock('firebase-admin', () => {
-  const FieldValue = { serverTimestamp: () => '__SERVER_TIMESTAMP__' }
-  const firestoreFn = Object.assign(() => mocks.firestoreRef.current, { FieldValue })
-  return { initializeApp: vi.fn(), firestore: firestoreFn }
-})
+vi.mock('firebase-admin/firestore', () => ({
+  getFirestore: () => mocks.firestoreRef.current,
+  FieldValue: {
+    serverTimestamp: () => '__SERVER_TIMESTAMP__',
+    increment: (n: number) => ({ __increment: n }),
+  },
+}))
 
 vi.mock('stripe', () => ({
   default: vi.fn().mockImplementation(function StripeMock() {
