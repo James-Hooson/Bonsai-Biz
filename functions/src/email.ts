@@ -3,7 +3,7 @@ import nodemailer from 'nodemailer'
 
 export const GMAIL_APP_PASSWORD = defineSecret('GMAIL_APP_PASSWORD')
 
-export const SENDER_EMAIL = 'zenoasisnz@gmail.com'
+export const SENDER_EMAIL = 'jmhooson48@gmail.com'
 export const SHOP_EMAIL = 'zenoasisnz@gmail.com'
 
 // Callers must list GMAIL_APP_PASSWORD in their function's `secrets`.
