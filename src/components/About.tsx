@@ -62,7 +62,7 @@ export const About: React.FC<PageProps> = ({
         title={<EditableText field="heroTitle">About Zen Oasis</EditableText>}
         lede={
           <EditableText field="heroLede">
-            Bringing the ancient art of bonsai to enthusiasts worldwide
+            Bringing the ancient art of bonsai to enthusiasts in Wellington
           </EditableText>
         }
       />
