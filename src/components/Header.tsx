@@ -159,6 +159,14 @@ export const Header: React.FC<HeaderProps> = ({
                   >
                     Aquascaping
                   </Link>
+                  <Link
+                    to="/?category=japanese-art"
+                    role="menuitem"
+                    className="block px-5 py-2 text-sm text-sumi-soft hover:bg-washi hover:text-shu transition-colors"
+                    onClick={() => setShopDropdownOpen(false)}
+                  >
+                    Japanese Art
+                  </Link>
                   <div className="border-t border-rule my-1 mx-5"></div>
                   <Link
                     to="/"

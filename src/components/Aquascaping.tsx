@@ -171,8 +171,8 @@ export const Aquascaping: React.FC<PageProps> = ({
               <div aria-hidden="true" className="absolute inset-0 -translate-x-4 translate-y-4 bg-shu" />
               <div className="relative border border-rule bg-kinari p-3">
                 <img
-                  src="https://images.unsplash.com/photo-1583212292454-1fe6229603b7?q=80&w=800&auto=format&fit=crop"
-                  alt="Aquascape planted tank"
+                  src="/aquascaping-vivarium.jpg"
+                  alt="Planted vivarium with driftwood, pothos and alocasia"
                   className="w-full aspect-[4/5] object-cover"
                   loading="lazy"
                   decoding="async"

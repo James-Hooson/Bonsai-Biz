@@ -76,7 +76,7 @@ export const About: React.FC<PageProps> = ({
             </EditableText>
             <blockquote className="font-display text-headline text-sumi max-w-4xl">
               <EditableText field="mission" multiline>
-                ZenBonsai is your premier destination for high-quality bonsai
+                ZenOasis is your premier destination for high-quality bonsai
                 trees and accessories. Our mission is to bring the ancient art of
                 bonsai to enthusiasts around the world, making this timeless
                 practice accessible to everyone

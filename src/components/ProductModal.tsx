@@ -89,6 +89,7 @@ export const ProductModal: React.FC<{
                 <option value="aquatic-plants">Aquatic Plants</option>
                 <option value="tanks">Tanks</option>
                 <option value="aquascaping">Aquascaping</option>
+                <option value="japanese-art">Japanese Art</option>
               </select>
             </div>
 

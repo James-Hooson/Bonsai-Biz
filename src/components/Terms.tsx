@@ -16,7 +16,7 @@ const sections: LegalSection[] = [
           <a href="mailto:zenoasisnz@gmail.com" className={inlineLink}>
             zenoasisnz@gmail.com
           </a>
-          , 027 977 2954, or PO Box [number], Wellington [postcode].
+          {' '}or 027 977 2954.
         </p>
         <p>These terms apply to every order placed through this website. By placing an order, you agree to them.</p>
       </>

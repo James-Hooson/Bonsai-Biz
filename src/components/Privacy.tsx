@@ -143,7 +143,7 @@ const sections: LegalSection[] = [
     title: 'Contact us',
     body: (
       <p>
-        Zen Oasis (Cool Beanz Limited), PO Box [number], Wellington [postcode]. Email:{' '}
+        Zen Oasis (Cool Beanz Limited, NZ company number 9276039), Wellington. Email:{' '}
         <a href="mailto:zenoasisnz@gmail.com" className={inlineLink}>
           zenoasisnz@gmail.com
         </a>
