@@ -1,7 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
-import { doc, onSnapshot } from 'firebase/firestore'
-import { db } from '../firebase'
 import { Header } from './Header'
 import { Check, AlertCircle, Clock } from 'lucide-react'
 import { Footer } from './Footer'
@@ -12,40 +10,41 @@ import type { PageProps } from '../types'
 import { DELIVERY_FEE } from './CartSidebar'
 
 interface OrderItem {
-  productId: string
   name: string
   quantity: number
   unitPrice: number
 }
 
+// What getOrderStatus returns: just enough to show the receipt.
 interface Order {
   status: 'pending' | 'completed' | 'expired'
-  userEmail: string
+  email: string | null
   items: OrderItem[]
-  deliveryMethod?: 'pickup' | 'delivery'
-  deliveryFee?: number
-  stripeSessionId: string | null
-  stripePaymentIntentId: string | null
+  deliveryMethod: 'pickup' | 'delivery'
+  deliveryFee: number | null
 }
 
-export const OrderSuccess: React.FC<PageProps> = ({
-  user,
-  isAuthenticated,
-  isLoading,
-  firebaseReady,
-  onLogout,
-}) => {
+// The webhook usually marks the order paid within a few seconds of Stripe
+// redirecting here; check every 2s for up to a minute before giving up.
+const POLL_INTERVAL_MS = 2000
+const MAX_POLLS = 30
+
+const NOT_FOUND_MESSAGE =
+  "We couldn't find this order. If you were charged, please email zenoasisnz@gmail.com and we'll sort it out."
+
+export const OrderSuccess: React.FC<PageProps> = ({ user, isAuthenticated, onLogout }) => {
   const [searchParams] = useSearchParams()
   const orderId = searchParams.get('order_id')
+  const sessionId = searchParams.get('session_id')
   const [order, setOrder] = useState<Order | null>(null)
   const [error, setError] = useState<string | null>(
-    orderId ? null : 'Order ID not found'
+    orderId && sessionId ? null : NOT_FOUND_MESSAGE
   )
-  const loading = !!orderId && isAuthenticated && !order && !error
+  const [timedOut, setTimedOut] = useState(false)
 
   useEffect(() => {
-    // Paid, so there's nothing for the shop to cancel on the way back, and the
-    // cart has been bought.
+    // Back from Stripe, so there's nothing for the shop to cancel on the way
+    // back, and the cart has been bought.
     try {
       sessionStorage.removeItem(PENDING_CHECKOUT_KEY)
       localStorage.removeItem(CART_STORAGE_KEY)
@@ -55,25 +54,48 @@ export const OrderSuccess: React.FC<PageProps> = ({
   }, [])
 
   useEffect(() => {
-    if (!orderId || !isAuthenticated || !firebaseReady) return
+    if (!orderId || !sessionId) return
+    let cancelled = false
+    let timer: ReturnType<typeof setTimeout> | undefined
+    let polls = 0
 
-    const unsubscribe = onSnapshot(
-      doc(db, 'orders', orderId),
-      (docSnap) => {
-        if (docSnap.exists()) {
-          setOrder(docSnap.data() as Order)
-        } else {
-          setError('Order not found')
+    const check = async () => {
+      polls += 1
+      try {
+        const response = await fetch(`${import.meta.env.VITE_FUNCTIONS_BASE_URL}/getOrderStatus`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orderId, sessionId }),
+        })
+        if (cancelled) return
+        if (response.status === 404 || response.status === 400) {
+          setError(NOT_FOUND_MESSAGE)
+          return
         }
-      },
-      (err) => {
-        console.error('Error fetching order:', err)
-        setError('Failed to load order')
-      }
-    )
+        if (!response.ok) throw new Error(`Order lookup failed with ${response.status}`)
 
-    return () => unsubscribe()
-  }, [orderId, isAuthenticated, firebaseReady])
+        const result = (await response.json()) as Order
+        if (cancelled) return
+        setOrder(result)
+        if (result.status !== 'pending') return
+      } catch (err) {
+        console.error('Error fetching order:', err)
+        if (cancelled) return
+      }
+
+      if (polls >= MAX_POLLS) {
+        setTimedOut(true)
+      } else {
+        timer = setTimeout(check, POLL_INTERVAL_MS)
+      }
+    }
+
+    check()
+    return () => {
+      cancelled = true
+      clearTimeout(timer)
+    }
+  }, [orderId, sessionId])
 
   // Orders created before deliveryFee was stored charged the flat fee.
   const deliveryFee =
@@ -84,14 +106,6 @@ export const OrderSuccess: React.FC<PageProps> = ({
       order.items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0) + deliveryFee,
     [order, deliveryFee],
   )
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Enso />
-      </div>
-    )
-  }
 
   const notice = (icon: React.ReactNode, title: string, message: string, cta: string) => (
     <div className="text-center">
@@ -118,25 +132,25 @@ export const OrderSuccess: React.FC<PageProps> = ({
       />
 
       <main className="flex-1 w-full max-w-2xl mx-auto px-gutter py-24">
-        {loading ? (
-          <Enso label="Loading order…" />
-        ) : error ? (
-          notice(<AlertCircle className="w-8 h-8" />, 'Error', error, 'Return to Shop')
-        ) : !isAuthenticated ? (
+        {error ? (
+          notice(<AlertCircle className="w-8 h-8" />, 'Order Not Found', error, 'Return to Shop')
+        ) : timedOut ? (
           notice(
-            <Check className="w-8 h-8" />,
-            'Order Confirmed!',
-            'Thank you for your purchase. A confirmation has been sent to your email.',
-            'Continue Shopping',
+            <Clock className="w-8 h-8" />,
+            'Payment Still Processing',
+            `We haven't had confirmation from our payment provider yet. If your payment goes through, we'll email your confirmation; if it doesn't, no money is taken. Your order reference is ${orderId}.`,
+            'Return to Shop',
           )
-        ) : order?.status === 'pending' ? (
+        ) : !order ? (
+          <Enso label="Loading order…" />
+        ) : order.status === 'pending' ? (
           <div className="text-center">
             <Enso label="Payment Processing..." />
             <p className="text-sumi-soft mt-2">
               Please wait while we confirm your payment.
             </p>
           </div>
-        ) : order?.status === 'expired' ? (
+        ) : order.status === 'expired' ? (
           notice(
             <Clock className="w-8 h-8" />,
             'Checkout Session Expired',
@@ -152,7 +166,10 @@ export const OrderSuccess: React.FC<PageProps> = ({
                 <h1 className="text-headline text-sumi mb-2">Order Confirmed!</h1>
                 <p className="text-sumi-soft">
                   Thank you for your purchase. Your order has been received
-                  {order?.userEmail ? ` and a confirmation has been sent to ${order.userEmail}.` : '.'}
+                  {order.email ? ` and a confirmation has been sent to ${order.email}.` : '.'}
+                </p>
+                <p className="text-sm text-sumi-soft mt-3">
+                  Order reference: <span className="font-medium text-sumi break-all">{orderId}</span>
                 </p>
               </div>
               <Seal className="w-16 h-16 shrink-0 -rotate-6">
@@ -163,7 +180,7 @@ export const OrderSuccess: React.FC<PageProps> = ({
             <div className="border-t border-sumi pt-6">
               <h2 className="field-label mb-4">Order Details</h2>
               <ul className="divide-y divide-dashed divide-rule">
-                {order?.items.map((item, index) => (
+                {order.items.map((item, index) => (
                   <li
                     key={index}
                     className="flex justify-between items-baseline py-3"
