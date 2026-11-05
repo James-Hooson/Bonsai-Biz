@@ -156,6 +156,7 @@ describe('createCheckoutSession', () => {
         quantity: 2,
       }),
     ])
+    expect(sessionParams.consent_collection).toEqual({ terms_of_service: 'required' })
 
     const order = mocks.firestoreRef.current.store.orders['key-1']
     expect(order).toMatchObject({

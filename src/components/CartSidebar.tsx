@@ -92,7 +92,7 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
                   <div className="flex-1">
                     <h3 className="font-display text-lg text-sumi leading-tight">{item.name}</h3>
                     <p className="text-shu font-display font-bold">
-                      ${item.price}
+                      ${item.price.toFixed(2)}
                     </p>
                     <div className="flex items-center gap-1 mt-3">
                       <button

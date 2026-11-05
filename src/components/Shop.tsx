@@ -416,7 +416,7 @@ export const Shop: React.FC<PageProps> = ({
                 <div className="flex items-baseline justify-between gap-4 mb-2">
                   <h3 className="text-title text-sumi">{product.name}</h3>
                   <span className="font-display text-xl font-bold text-shu whitespace-nowrap">
-                    ${product.price}
+                    ${product.price.toFixed(2)}
                   </span>
                 </div>
                 <p className="text-sm text-sumi-soft mb-4 line-clamp-2">{product.description}</p>

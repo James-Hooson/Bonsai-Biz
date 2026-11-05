@@ -211,6 +211,9 @@ export const createCheckoutSession = onRequest(
         mode: 'payment',
         payment_method_types: ['card'],
         line_items: lineItems,
+        // Customers must tick "I agree to the Terms of Service" before paying.
+        // Stripe uses the Terms URL saved in the Dashboard's Public details.
+        consent_collection: { terms_of_service: 'required' },
         // Short expiry so abandoned checkouts don't hold reserved stock for
         // Stripe's default 24h. A minute of slack over Stripe's 30-minute minimum.
         expires_at: Math.floor(Date.now() / 1000) + RESERVATION_SECONDS,
