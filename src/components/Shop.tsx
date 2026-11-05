@@ -149,9 +149,10 @@ export const Shop: React.FC<PageProps> = ({
     setCart((prev) => {
       const existing = prev.find((item) => item.id === product.id)
       if (existing) {
+        // Checkout rejects more than is in stock, so don't let the cart get there.
         return prev.map((item) =>
           item.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
+            ? { ...item, quantity: Math.min(item.quantity + 1, product.stock) }
             : item,
         )
       }
@@ -169,7 +170,9 @@ export const Shop: React.FC<PageProps> = ({
       return
     }
     setCart((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, quantity } : item)),
+      prev.map((item) =>
+        item.id === id ? { ...item, quantity: Math.min(quantity, item.stock) } : item,
+      ),
     )
   }
 
@@ -208,6 +211,11 @@ export const Shop: React.FC<PageProps> = ({
     }
     window.location.href = url
   }
+
+  const cartQuantities = useMemo(
+    () => new Map(cart.map((item) => [item.id, item.quantity])),
+    [cart],
+  )
 
   const filteredProducts = useMemo(
     () =>
@@ -387,9 +395,14 @@ export const Shop: React.FC<PageProps> = ({
                 </div>
                 <p className="text-sm text-sumi-soft mb-4 line-clamp-2">{product.description}</p>
                 <div className="mt-auto flex items-center justify-end gap-4">
+                  {product.inStock && (cartQuantities.get(product.id) ?? 0) >= product.stock && (
+                    <span className="text-xs text-sumi-soft">
+                      Only {product.stock} available
+                    </span>
+                  )}
                   <button
                     onClick={() => addToCart(product)}
-                    disabled={!product.inStock}
+                    disabled={!product.inStock || (cartQuantities.get(product.id) ?? 0) >= product.stock}
                     className="btn-primary px-5 py-2.5"
                   >
                     Add to Cart

@@ -110,7 +110,9 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
                         onClick={() =>
                           onUpdateQuantity(item.id, item.quantity + 1)
                         }
-                        className="w-8 h-8 border border-rule text-sumi hover:border-sumi hover:bg-kinari transition"
+                        disabled={item.quantity >= item.stock}
+                        aria-label={`Add another ${item.name}`}
+                        className="w-8 h-8 border border-rule text-sumi hover:border-sumi hover:bg-kinari transition disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-rule disabled:hover:bg-transparent"
                       >
                         +
                       </button>
@@ -121,6 +123,9 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
                         Remove
                       </button>
                     </div>
+                    {item.quantity >= item.stock && (
+                      <p className="text-xs text-sumi-soft mt-2">Only {item.stock} available</p>
+                    )}
                   </div>
                 </div>
               ))}
