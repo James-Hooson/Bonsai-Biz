@@ -59,7 +59,7 @@ export const About: React.FC<PageProps> = ({
 
       <PageHero
         eyebrow={<EditableText field="heroEyebrow">Since 2023</EditableText>}
-        title={<EditableText field="heroTitle">About ZenBonsai</EditableText>}
+        title={<EditableText field="heroTitle">About Zen Oasis</EditableText>}
         lede={
           <EditableText field="heroLede">
             Bringing the ancient art of bonsai to enthusiasts worldwide
@@ -76,7 +76,7 @@ export const About: React.FC<PageProps> = ({
             </EditableText>
             <blockquote className="font-display text-headline text-sumi max-w-4xl">
               <EditableText field="mission" multiline>
-                ZenOasis is your premier destination for high-quality bonsai
+                Zen Oasis is your premier destination for high-quality bonsai
                 trees and accessories. Our mission is to bring the ancient art of
                 bonsai to enthusiasts around the world, making this timeless
                 practice accessible to everyone
@@ -137,7 +137,7 @@ export const About: React.FC<PageProps> = ({
               </EditableText>
               <div className="space-y-4 text-sumi-soft">
                 <EditableText field="story1" as="p" multiline>
-                  Founded in 2023, ZenOasis began with a simple vision: to make
+                  Founded in 2023, Zen Oasis began with a simple vision: to make
                   the art of bonsai accessible to everyone. What started as a
                   small collection has grown into a comprehensive marketplace
                   offering trees for every skill level.

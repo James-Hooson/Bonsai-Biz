@@ -25,6 +25,8 @@ interface CheckoutItem {
 }
 
 const DELIVERY_FEE_NZD = 15
+// Keep in step with the delivery section of the Terms page and the cart.
+const DELIVERY_AREA_NOTE = 'We deliver to Upper Hutt, Lower Hutt and Wellington City only.'
 const RESERVATION_SECONDS = 31 * 60
 
 class UnavailableItemError extends Error {}
@@ -217,6 +219,7 @@ export const createCheckoutSession = onRequest(
         ...(userEmail && { customer_email: userEmail }),
         ...(deliveryMethod === 'delivery' && {
           shipping_address_collection: { allowed_countries: ['NZ'] },
+          custom_text: { shipping_address: { message: DELIVERY_AREA_NOTE } },
         }),
         metadata: {
           orderId: orderRef.id,

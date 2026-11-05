@@ -163,7 +163,9 @@ export const CartSidebar: React.FC<CartSidebarProps> = ({
                 </button>
               </div>
               {deliveryMethod === 'delivery' && (
-                <p className="text-xs text-sumi-soft mt-2">Flat rate delivery within NZ</p>
+                <p className="text-xs text-sumi-soft mt-2">
+                  Flat rate delivery to Upper Hutt, Lower Hutt and Wellington City only
+                </p>
               )}
             </div>
 

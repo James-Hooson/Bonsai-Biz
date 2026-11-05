@@ -296,6 +296,72 @@ describe('stripeWebhook', () => {
     expect(mocks.firestoreRef.current.store.orders['order-1'].status).toBe('completed')
   })
 
+  it('returns 500 so Stripe retries when the order cannot be updated', async () => {
+    seedReservedOrder()
+    mocks.retrieveSessionMock.mockRejectedValueOnce(new Error('Stripe API unavailable'))
+    mocks.constructEventMock.mockReturnValue(completedEvent)
+
+    const res1 = createMockResponse()
+    await stripeWebhook(createMockRequest() as never, res1 as never)
+    expect(res1.statusCode).toBe(500)
+    expect(mocks.firestoreRef.current.store.orders['order-1'].status).toBe('pending')
+
+    // Stripe's retry then completes the order.
+    const res2 = createMockResponse()
+    await stripeWebhook(createMockRequest() as never, res2 as never)
+    expect(res2.statusCode).toBe(200)
+    expect(mocks.firestoreRef.current.store.orders['order-1'].status).toBe('completed')
+  })
+
+  it('leaves the order pending when checkout completes but payment has not arrived yet', async () => {
+    seedReservedOrder()
+    mocks.retrieveSessionMock.mockResolvedValue({
+      id: 'cs_test_1',
+      payment_status: 'unpaid',
+      payment_intent: 'pi_test_1',
+      customer_details: { email: 'buyer@example.com' },
+      shipping_details: null,
+    })
+    mocks.constructEventMock.mockReturnValue(completedEvent)
+
+    const res = createMockResponse()
+    await stripeWebhook(createMockRequest() as never, res as never)
+
+    expect(res.statusCode).toBe(200)
+    expect(mocks.firestoreRef.current.store.orders['order-1'].status).toBe('pending')
+    expect(mocks.sendMailMock).not.toHaveBeenCalled()
+  })
+
+  it('completes the order when a delayed payment succeeds', async () => {
+    seedReservedOrder()
+    mocks.retrieveSessionMock.mockResolvedValue({
+      id: 'cs_test_1',
+      payment_status: 'paid',
+      payment_intent: 'pi_test_1',
+      customer_details: { email: 'buyer@example.com' },
+      shipping_details: null,
+    })
+    mocks.constructEventMock.mockReturnValue({ ...completedEvent, type: 'checkout.session.async_payment_succeeded' })
+
+    await stripeWebhook(createMockRequest() as never, createMockResponse() as never)
+
+    expect(mocks.firestoreRef.current.store.orders['order-1'].status).toBe('completed')
+    expect(mocks.firestoreRef.current.store.products.juniper.stock).toBe(3)
+  })
+
+  it('returns reserved stock when a delayed payment fails', async () => {
+    seedReservedOrder()
+    mocks.constructEventMock.mockReturnValue({
+      type: 'checkout.session.async_payment_failed',
+      data: { object: { metadata: { orderId: 'order-1' } } },
+    })
+
+    await stripeWebhook(createMockRequest() as never, createMockResponse() as never)
+
+    expect(mocks.firestoreRef.current.store.orders['order-1'].status).toBe('expired')
+    expect(mocks.firestoreRef.current.store.products.juniper).toMatchObject({ stock: 5, inStock: true })
+  })
+
   it('returns 200 for event types it does not handle', async () => {
     mocks.constructEventMock.mockReturnValue({
       type: 'payment_intent.created',

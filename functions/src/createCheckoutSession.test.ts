@@ -254,6 +254,7 @@ describe('createCheckoutSession', () => {
     const [sessionParams] = mocks.createSessionMock.mock.calls[0]
     expect(sessionParams.line_items).toHaveLength(2)
     expect(sessionParams.shipping_address_collection).toEqual({ allowed_countries: ['NZ'] })
+    expect(sessionParams.custom_text.shipping_address.message).toContain('Upper Hutt, Lower Hutt and Wellington City')
     expect(mocks.firestoreRef.current.store.orders['key-delivery'].deliveryFee).toBe(15)
   })
 

@@ -39,3 +39,7 @@ export class CheckoutResponseError extends Error {
 // Order ID of a checkout this tab sent to Stripe and hasn't seen paid. Stripe
 // sessions hold reserved stock, so returning to the shop without paying cancels it.
 export const PENDING_CHECKOUT_KEY = 'pendingCheckoutOrderId'
+
+// The shopper's cart, kept across page changes, reloads and a trip to Stripe
+// and back. Cleared once an order is paid.
+export const CART_STORAGE_KEY = 'cart'

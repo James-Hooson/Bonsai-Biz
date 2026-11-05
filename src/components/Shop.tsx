@@ -11,7 +11,7 @@ import {
 } from 'firebase/firestore'
 import { db } from '../firebase'
 import { Link, useSearchParams } from 'react-router-dom'
-import { ADMIN_EMAILS, CheckoutResponseError, PENDING_CHECKOUT_KEY } from '../types'
+import { ADMIN_EMAILS, CART_STORAGE_KEY, CheckoutResponseError, PENDING_CHECKOUT_KEY } from '../types'
 import type { Product, CartItem, PageProps } from '../types'
 import { AdminPanel } from './AdminPanel'
 import { CartSidebar } from './CartSidebar'
@@ -19,6 +19,15 @@ import { ProductModal } from './ProductModal'
 import { PageHero } from './PageHero'
 import { Footer } from './Footer'
 import { Enso, Blossom } from './Ornaments'
+
+function loadSavedCart(): CartItem[] {
+  try {
+    const saved = JSON.parse(localStorage.getItem(CART_STORAGE_KEY) ?? '[]')
+    return Array.isArray(saved) ? saved : []
+  } catch {
+    return []
+  }
+}
 
 export const Shop: React.FC<PageProps> = ({
   user,
@@ -30,7 +39,7 @@ export const Shop: React.FC<PageProps> = ({
   const [searchParams] = useSearchParams()
   const urlCategory = searchParams.get('category')
   const [cartOpen, setCartOpen] = useState(false)
-  const [cart, setCart] = useState<CartItem[]>([])
+  const [cart, setCart] = useState<CartItem[]>(loadSavedCart)
   const [mainCategory, setMainCategory] = useState(urlCategory || 'all')
   const [showAdminPanel, setShowAdminPanel] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
@@ -60,6 +69,14 @@ export const Shop: React.FC<PageProps> = ({
   }, [urlCategory])
 
   useEffect(() => {
+    try {
+      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart))
+    } catch {
+      // Storage unavailable; the cart just won't survive leaving the page.
+    }
+  }, [cart])
+
+  useEffect(() => {
     const loadProducts = async () => {
       setLoading(true)
       setError(null)
@@ -77,6 +94,15 @@ export const Shop: React.FC<PageProps> = ({
           } as Product)
         })
         setProducts(loadedProducts)
+        // A saved cart may hold old prices or products since removed, so
+        // refresh each item from the catalogue and drop the ones that are gone.
+        const byId = new Map(loadedProducts.map((p) => [p.id, p]))
+        setCart((prev) =>
+          prev.flatMap((item) => {
+            const product = byId.get(item.id)
+            return product ? [{ ...product, quantity: item.quantity }] : []
+          }),
+        )
       } catch (err) {
         console.error('Failed to load products:', err)
         setError('Failed to load products. Please try again.')

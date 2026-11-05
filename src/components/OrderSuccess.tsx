@@ -7,7 +7,7 @@ import { Check, AlertCircle, Clock } from 'lucide-react'
 import { Footer } from './Footer'
 import { Enso, Seal } from './Ornaments'
 
-import { PENDING_CHECKOUT_KEY } from '../types'
+import { CART_STORAGE_KEY, PENDING_CHECKOUT_KEY } from '../types'
 import type { PageProps } from '../types'
 import { DELIVERY_FEE } from './CartSidebar'
 
@@ -44,9 +44,11 @@ export const OrderSuccess: React.FC<PageProps> = ({
   const loading = !!orderId && isAuthenticated && !order && !error
 
   useEffect(() => {
-    // Paid, so there's nothing for the shop to cancel on the way back.
+    // Paid, so there's nothing for the shop to cancel on the way back, and the
+    // cart has been bought.
     try {
       sessionStorage.removeItem(PENDING_CHECKOUT_KEY)
+      localStorage.removeItem(CART_STORAGE_KEY)
     } catch {
       // Storage unavailable; nothing to clear.
     }
