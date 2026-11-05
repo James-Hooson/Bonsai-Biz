@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { Waves, Wrench, MessageCircle, Fish, Leaf, Droplets } from 'lucide-react'
+import { PencilRuler, Hammer, Wrench, MessageCircle, House, Building2 } from 'lucide-react'
 import { Header } from './Header'
 import { PageHero } from './PageHero'
 import { Footer } from './Footer'
@@ -12,49 +12,49 @@ import type { PageProps } from '../types'
 // `id` keys each item's editable text, so it must stay stable if items are reordered.
 const services = [
   {
-    id: 'setup',
-    icon: Waves,
-    title: 'Tank Setup',
-    body: 'Full tank builds from scratch — we handle substrate, hardscape, planting, lighting, and filtration to create a thriving aquascape tailored to your vision.',
+    id: 'design',
+    icon: PencilRuler,
+    title: 'Design',
+    body: "We start with your space and your animals — choosing the layout, hardscape, plants, and equipment to suit the habitat and the look you're after.",
   },
   {
-    id: 'servicing',
+    id: 'build',
+    icon: Hammer,
+    title: 'Build',
+    body: 'We bring it to life — substrate, hardscape, planting, lighting, and filtration, all set up and ready for its inhabitants.',
+  },
+  {
+    id: 'maintain',
     icon: Wrench,
-    title: 'Servicing',
-    body: 'Regular maintenance visits to keep your tank in peak condition — water changes, plant trimming, filter cleans, and water parameter checks.',
-  },
-  {
-    id: 'consultation',
-    icon: MessageCircle,
-    title: 'Consultation',
-    body: 'Not sure where to start? Our experts can advise on tank size, livestock compatibility, plant selection, CO₂ systems, and more — in person or online.',
+    title: 'Maintain',
+    body: 'Once established, we keep it thriving with trimming, cleaning, replanting, and recalibrating — as often as you need.',
   },
 ]
 
 const offerings = [
   {
-    id: 'tanks',
-    icon: Fish,
-    title: 'Planted & Nature-Style Tanks',
-    body: 'Dutch, Iwagumi, jungle — any style designed to your taste.',
+    id: 'home-enclosure',
+    icon: House,
+    title: 'Custom Enclosure for Your Home',
+    body: 'We can design habitats (vivariums, paludariums, aquariums) for your animals (reptiles, amphibians, fish, insects, and arachnids).',
   },
   {
-    id: 'plants',
-    icon: Leaf,
-    title: 'Live Plant Selection',
-    body: 'Foreground carpets, midground accents, and background stems sourced fresh.',
+    id: 'commercial-display',
+    icon: Building2,
+    title: 'Custom Display for Commercial Spaces',
+    body: 'Are you a business (corporate offices/lobbies, hotels, restaurants/cafes, retail stores, wellness studios, etc.) or organization (zoos, aquariums, schools) looking for a beautiful, captivating natural showpiece? We can build large display tanks for your needs!',
   },
   {
-    id: 'water',
-    icon: Droplets,
-    title: 'Water Chemistry Support',
-    body: 'CO₂ injection, fertilisation schedules, and parameter balancing.',
-  },
-  {
-    id: 'maintenance',
+    id: 'maintenance-service',
     icon: Wrench,
-    title: 'Ongoing Maintenance Plans',
-    body: 'Weekly or fortnightly visits so your tank always looks its best.',
+    title: 'Maintenance Service',
+    body: 'We can provide regular maintenance (trimming, cleaning, replanting, recalibrating) for enclosures we build, or any of your existing setups!',
+  },
+  {
+    id: 'paid-consultation',
+    icon: MessageCircle,
+    title: 'Consultation',
+    body: 'Have a long list of questions about an existing or future build? We offer paid 1-hour consultation sessions to discuss your questions in-depth.',
   },
 ]
 
@@ -62,7 +62,7 @@ const stats = [
   { id: 'built', value: '50+', label: 'Tanks Built' },
   { id: 'custom', value: '100%', label: 'Custom Designs' },
   { id: 'area', value: 'NZ-Wide', label: 'Service Area' },
-  { id: 'consult', value: 'Free', label: 'Initial Consult' },
+  { id: 'consult', value: '1-Hour', label: 'Consult Sessions' },
 ]
 
 export const Aquascaping: React.FC<PageProps> = ({
@@ -91,7 +91,7 @@ export const Aquascaping: React.FC<PageProps> = ({
         }
       >
         <Link to="/contact" className="btn-seal">
-          <EditableText field="heroButton">Book a Free Consult</EditableText>
+          <EditableText field="heroButton">Book a Consult</EditableText>
         </Link>
       </PageHero>
 
@@ -215,7 +215,7 @@ export const Aquascaping: React.FC<PageProps> = ({
               Ready to create your perfect aquascape?
             </EditableText>
             <EditableText field="ctaBody" as="p" className="text-sumi-soft mb-6">
-              Reach out for a free consultation and let's design something beautiful.
+              Reach out to discuss your project and let's design something beautiful.
             </EditableText>
             <Link to="/contact" className="btn-primary">
               <EditableText field="ctaButton">Get in Touch</EditableText>
