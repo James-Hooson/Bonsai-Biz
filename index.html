@@ -2,6 +2,14 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <script>
+      // Firebase always serves the site on its own default domains too, and
+      // checkout only works on zenoasis.co.nz, so send visitors there. Exact
+      // names only: PR preview channels (bonsai-new--pr-…web.app) must stay put.
+      if (['bonsai-new.web.app', 'bonsai-new.firebaseapp.com'].includes(location.hostname)) {
+        location.replace('https://zenoasis.co.nz' + location.pathname + location.search + location.hash)
+      }
+    </script>
     <link rel="icon" type="image/svg+xml" href="/Bonsai.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Zen Oasis</title>
